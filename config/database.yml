@@ -1,0 +1,22 @@
+<% override = File.join(RAILS_ROOT, "config", "dblogin.yml") %>
+
+defaults: &defaults
+  adapter: mysql
+  host: localhost
+  username: root
+  password: ~
+  encoding: utf8
+
+production:
+  database: redmine_production
+  <<: *defaults
+  
+development:
+  database: redmine_development
+  <<: *defaults
+  
+test:
+  database: redmine_test
+  <<: *defaults
+
+<%= ERB.new(IO.read(override), nil, nil, '_jerbout').result if File.exist?(override) %>
