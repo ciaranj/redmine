@@ -77,7 +77,7 @@ notice_failed_to_save_issues: "Failed to save %d ticket(s) on %d selected: %s."
 notice_no_issue_selected: "No ticket is selected! Please, check the tickets you want to edit."
 notice_account_pending: "Your account was created and is now pending administrator approval."
 notice_default_data_loaded: Default configuration successfully loaded.
-notice_unable_delete_version: Unable to delete version.
+notice_unable_delete_version: Unable to delete sprint.
 
 error_can_t_load_default_data: "Default configuration could not be loaded: %s"
 error_scm_not_found: "The entry or revision was not found in the repository."
@@ -132,7 +132,7 @@ field_subject: Subject
 field_due_date: Due date
 field_assigned_to: Assigned to
 field_priority: Priority
-field_fixed_version: Target version
+field_fixed_version: Target sprint
 field_user: User
 field_role: Role
 field_homepage: Homepage
@@ -149,7 +149,7 @@ field_effective_date: Date
 field_password: Password
 field_new_password: New password
 field_password_confirmation: Confirmation
-field_version: Version
+field_version: Sprint
 field_type: Type
 field_host: Host
 field_port: Port
@@ -228,7 +228,7 @@ setting_diff_max_lines_displayed: Max number of diff lines displayed
 permission_edit_project: Edit project
 permission_select_project_modules: Select project modules
 permission_manage_members: Manage members
-permission_manage_versions: Manage versions
+permission_manage_versions: Manage sprints
 permission_manage_categories: Manage ticket categories
 permission_add_issues: Add tickets
 permission_edit_issues: Edit tickets
@@ -386,9 +386,9 @@ label_news_added: News added
 label_change_log: Change log
 label_settings: Settings
 label_overview: Overview
-label_version: Version
-label_version_new: New version
-label_version_plural: Versions
+label_version: Sprint
+label_version_new: New sprint
+label_version_plural: Sprints
 label_confirmation: Confirmation
 label_export_to: 'Also available in:'
 label_read: Read...
@@ -473,7 +473,7 @@ label_sort_lowest: Move to bottom
 label_roadmap: Roadmap
 label_roadmap_due_in: Due in %s
 label_roadmap_overdue: %s late
-label_roadmap_no_issues: No tickets for this version
+label_roadmap_no_issues: No tickets for this sprint
 label_search: Search
 label_result_plural: Results
 label_all_words: All words
@@ -484,7 +484,7 @@ label_wiki_page: Wiki page
 label_wiki_page_plural: Wiki pages
 label_index_by_title: Index by title
 label_index_by_date: Index by date
-label_current_version: Current version
+label_current_version: Current sprint
 label_preview: Preview
 label_feed_plural: Feeds
 label_changes_details: Details of all changes
@@ -522,7 +522,7 @@ label_start_to_start: start to start
 label_start_to_end: start to end
 label_stay_logged_in: Stay logged in
 label_disabled: disabled
-label_show_completed_versions: Show completed versions
+label_show_completed_versions: Show completed sprints
 label_me: me
 label_board: Forum
 label_board_new: New forum
@@ -607,7 +607,7 @@ button_cancel: Cancel
 button_activate: Activate
 button_sort: Sort
 button_log_time: Log time
-button_rollback: Rollback to this version
+button_rollback: Rollback to this sprint
 button_watch: Watch
 button_unwatch: Unwatch
 button_reply: Reply
