@@ -1,0 +1,6 @@
+.status_container { float: left; min-height: 400px; border-bottom: 1px solid #bbb; }
+  #statuses .hovered { background: #FEFF9F; }
+  .status_container dt { border: 1px solid #bbb; border-width: 1px 0; text-align: center; color: #333; padding: 4px 0; }
+  .status_container dd { margin: 0; padding: 10px; }
+  .status_container ul { padding: 0; list-style: none; }
+    .status_container ul li { margin-bottom: 10px; background: #FFFFCF; padding: 3px; cursor: pointer; border: 1px solid #ffff55;}

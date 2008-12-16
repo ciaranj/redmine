@@ -1,0 +1,2 @@
+<li id="<%= dom_id(issue) %>" class="<%= status_classes_for(issue, User.current) %>"><%= link_to_issue(issue) %>: <%=h issue.subject  %></li>
+<%= draggable_element(dom_id(issue), :ghosting => true, :revert => '"failure"') %>
