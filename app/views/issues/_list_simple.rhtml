@@ -6,6 +6,7 @@
           <th><%=l(:field_project)%></th>
           <th><%=l(:field_tracker)%></th>
           <th><%=l(:field_subject)%></th>
+          <th><%=l(:field_done_ratio)%></th>
           <th><%=l(:field_status)%></th>
           <th><%=l(:field_updated_on)%></th>
         </tr>
@@ -21,9 +22,12 @@
             <td class="subject">
               <%= link_to h(issue.subject), :controller => 'issues', :action => 'show', :id => issue %>
             </td>
+            <td class="progress">
+              <%= progress_bar issue.done_ratio, :width => '100px', :legend => "#{issue.done_ratio}%" %>
+            </td>
             <td><%= issue.status.name %></td>
             <td><%= format_time(issue.updated_on) %></td>
-        </tr>
+          </tr>
         <% end %>
       </tbody>
     </table>
