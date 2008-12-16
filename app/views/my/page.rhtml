@@ -31,6 +31,19 @@
 	<% end if @blocks['right'] %>
 </div>
 
+<% content_for :sidebar do %>
+  <h3>Current Sprints</h3>
+  <% @projects.each do |project| %>
+    <% versions = project.versions.reject(&:completed?) -%>
+    <% if versions.any? -%>
+      <h4><%= link_to(project.name, :controller => 'projects', :action => 'show', :id => project.to_param) %></h4>
+      <% versions.each do |version| %>
+        <p><%= version.name %>: <%= link_to('Status', :controller => 'versions', :action => 'show', :id => version.id)  %> | <%= link_to("Task board", :controller => 'task_boards', :action => 'show', :id => version.id)  %></p>
+      <% end -%>
+    <% end -%>
+  <% end -%>
+<% end %>
+
 <% content_for :header_tags do %>
     <%= javascript_include_tag 'context_menu' %>
     <%= stylesheet_link_tag 'context_menu' %>

@@ -24,9 +24,9 @@ class MyController < ApplicationController
              'issuesreportedbyme' => :label_reported_issues,
              'issueswatched' => :label_watched_issues,
              'news' => :label_news_latest,
-             'calendar' => :label_calendar,
+             # 'calendar' => :label_calendar,
              'documents' => :label_document_plural,
-             'timelog' => :label_spent_time
+             # 'timelog' => :label_spent_time
            }.freeze
 
   DEFAULT_LAYOUT = {  'top' => ['issuesassignedtome', 'issueswatched'] 
@@ -45,6 +45,9 @@ class MyController < ApplicationController
   def page
     @user = User.current
     @blocks = @user.pref[:my_page_layout] || DEFAULT_LAYOUT
+    
+    
+    @projects = Project.find :all, :conditions => Project.visible_by(User.current), :include => [:versions]
   end
 
   # Edit user's account
