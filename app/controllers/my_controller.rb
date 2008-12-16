@@ -29,8 +29,7 @@ class MyController < ApplicationController
              'timelog' => :label_spent_time
            }.freeze
 
-  DEFAULT_LAYOUT = {  'left' => ['issuesassignedtome'], 
-                      'right' => ['issuesreportedbyme'] 
+  DEFAULT_LAYOUT = {  'top' => ['issuesassignedtome', 'issueswatched'] 
                    }.freeze
 
   verify :xhr => true,
