@@ -6,7 +6,7 @@
 <hr />
 <% end %>
 
-<div id="issue_descr_fields" <%= 'style="display:none"' unless @issue.new_record? || @issue.errors.any? %>>
+<div id="issue_descr_fields">
 <p><%= f.text_field :subject, :size => 80, :required => true %></p>
 <p><%= f.text_area :description, :required => true,
                    :cols => 60,
