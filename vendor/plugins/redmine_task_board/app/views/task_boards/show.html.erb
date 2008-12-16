@@ -7,9 +7,9 @@
   </style>
 <% end %>
 
-<div id="statuses">
+<div id="statuses" class="clearfix">
   <% @statuses.each do |status| %>
-    <dl id="<%= dom_id(status) %>" class="status_container <%= cycle('odd','even') %>">
+    <dl id="<%= dom_id(status) %>" class="status_container">
       <dt><%= status.name %></dt>
       <dd>
         <ul id="<%= dom_id(status, 'list') %>">
