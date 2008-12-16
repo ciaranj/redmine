@@ -12,7 +12,8 @@ class TaskBoardsController < ApplicationController
   def update_issue_status
     @issue = Issue.find(params[:id])
     @status = IssueStatus.find(params[:status_id])
-
+    
+    @issue.init_journal(User.current, "Automated status change from the Task Board")
     @issue.update_attribute(:status_id, @status.id)
     
     render :update do |page|
