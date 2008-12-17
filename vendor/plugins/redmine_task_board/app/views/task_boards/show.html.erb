@@ -2,6 +2,30 @@
 
 <% content_for :header_tags do %>
   <%= stylesheet_link_tag 'task_board', :plugin => 'redmine_task_board' %>
+
+  <style type="text/css">
+    .clearfix:after {
+      content: ".";
+      display: block;
+      height: 0;
+      clear: both;
+      visibility: hidden;
+      }
+
+  .clearfix {display: inline-block;}  /* for IE/Mac */
+  </style><!-- main stylesheet ends, CC with new stylesheet below... -->
+
+  <!--[if IE]>
+  <style type="text/css">
+    .clearfix {
+      zoom: 1;     /* triggers hasLayout */
+      display: block;     /* resets display for IE/Win */
+      }  /* Only IE can see inside the conditional comment
+      and read this CSS rule. Don't ever use a normal HTML
+      comment inside the CC or it will close prematurely. */
+  </style>
+  <![endif]-->
+  
   <style type="text/css" media="screen">
     .status_container { width: <%= (100/@statuses.size).floor %>%; }
   </style>
