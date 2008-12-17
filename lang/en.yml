@@ -516,6 +516,8 @@ label_blocks: blocks
 label_blocked_by: blocked by
 label_precedes: precedes
 label_follows: follows
+label_includes: includes
+label_belongs_to: belongs to
 label_end_to_start: end to start
 label_end_to_end: end to end
 label_start_to_start: start to start
