@@ -31,6 +31,8 @@
   </style>
 <% end %>
 
+
+<h2><%= @version.name %> Task Board</h2>
 <div id="statuses" class="clearfix">
   <% @statuses.each do |status| %>
     <dl id="<%= dom_id(status) %>" class="status_container">

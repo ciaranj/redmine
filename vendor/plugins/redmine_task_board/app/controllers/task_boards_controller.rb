@@ -1,6 +1,6 @@
 class TaskBoardsController < ApplicationController
   unloadable
-  menu_item :roadmap
+  menu_item :task_board
   
   before_filter :find_version_and_project, :authorize, :only => [:show]
   
@@ -24,7 +24,8 @@ class TaskBoardsController < ApplicationController
   
 private
   def find_version_and_project
-    @version = Version.find(params[:id])
-    @project = @version.project
+    @project = Project.find(params[:id])
+    @version = @project.current_version
+    render_error("There is no current Sprint for this Project") and return unless @version
   end
 end
