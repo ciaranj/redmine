@@ -8,5 +8,9 @@ Redmine::Plugin.register :burndown do
   description 'Generates a simple Burndown chart for using Redmine in Scrum environments'
   version '0.0.1'
 
-  permission :show_burndown, :burndowns => :show, :public => true
+  project_module :burndowns do  
+    permission :show_burndown, :burndowns => :show, :public => true
+  end
+
+  menu :project_menu, :burndown, { :controller => 'burndowns', :action => 'show' }, :before  => :activity
 end

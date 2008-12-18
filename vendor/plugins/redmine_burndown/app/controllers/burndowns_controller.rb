@@ -1,8 +1,6 @@
-require 'gchart'
-
 class BurndownsController < ApplicationController
   unloadable
-  menu_item :roadmap
+  menu_item :burndown
 
   before_filter :find_version_and_project, :authorize, :only => [:show]
 
@@ -12,7 +10,8 @@ class BurndownsController < ApplicationController
 
 private
   def find_version_and_project
-    @version = Version.find(params[:id])
-    @project = @version.project
+    @project = Project.find(params[:id])
+    @version = @project.current_version
+    render_error("There is no current Sprint for this Project") and return unless @version
   end
 end
