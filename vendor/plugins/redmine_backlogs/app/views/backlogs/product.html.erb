@@ -1,5 +1,8 @@
 <%= render :partial => 'tickets' %>
 
 <% content_for :sidebar do -%>
-  <p><%= link_to "Add Story", {:controller => 'issues', :action => 'new', :tracker_id => @story_tracker.id, :project_id => @parent_project}, :class => 'icon icon-add' %></p>
+  <p id="add_backlog_ticket"><%= link_to "Add Story", {:controller => 'issues', :action => 'new', :tracker_id => @story_tracker.id, :project_id => @parent_project}, :class => 'icon icon-add' %></p>
+  
+  <%= render :partial => 'issues/sidebar' %>
+  
 <% end -%>

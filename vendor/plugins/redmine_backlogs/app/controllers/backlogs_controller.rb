@@ -1,6 +1,8 @@
 class BacklogsController < ApplicationController
   unloadable
   
+  helper :issues
+  
   menu_item :product_backlog, :only => [:product]
   menu_item :sprint_backlog, :only => [:sprint]
   
