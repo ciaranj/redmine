@@ -8,10 +8,13 @@
       <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
     </fieldset>
     <fieldset id="column_selection">
-      <legend>Columns</legend>
+      <legend>Columns 
+        <small><%= link_to_function('all', "$$('#column_selection input').each(function(el) { el.checked = true; })") %></small>
+        <small><%= link_to_function('none', "$$('#column_selection input').each(function(el) { el.checked = false; })") %></small> 
+      </legend>
       <%= hidden_field_tag 'settings[issue_list_default_columns][]', '' %>
       <p>
-        <% @query.available_columns.each do |column| %>
+        <% @query.available_columns.reject {|col| [:due_date, :start_date].include?(col.name) }.each do |column| %>
           <label>
             <%= check_box_tag 'column_names[]', column.name, @query.columns.include?(column) %>
             <%= column.caption %>
