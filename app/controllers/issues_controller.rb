@@ -462,6 +462,9 @@ private
         # Give it a name, required to be valid
         @query = Query.new(:name => "_")
         @query.project = @project
+        
+        @query.column_names = params[:column_names] if params[:column_names]
+        
         if params[:fields] and params[:fields].is_a? Array
           params[:fields].each do |field|
             @query.add_filter(field, params[:operators][field], params[:values][field])
