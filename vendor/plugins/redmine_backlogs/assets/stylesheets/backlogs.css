@@ -1,0 +1,2 @@
+#main-menu li a.product-backlog { background: #000; margin-right: 10px; }
+#main-menu li a.product-backlog.selected { background: #eee; margin-right: 10px; }

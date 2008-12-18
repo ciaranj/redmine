@@ -1,0 +1,5 @@
+<%= render :partial => 'tickets' %>
+
+<% content_for :sidebar do -%>
+  <p><%= link_to "Add Task", {:controller => 'issues', :action => 'new', :tracker_id => @task_tracker, :project_id => @project, :issue => {:fixed_version_id => @current_sprint} }, :class => 'icon icon-add' %></p>
+<% end -%>
