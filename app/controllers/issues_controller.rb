@@ -474,10 +474,10 @@ private
             @query.add_short_filter(field, params[field]) if params[field]
           end
         end
-        session[:query] = {:project_id => @query.project_id, :filters => @query.filters}
+        session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :column_names => @query.column_names}
       else
         @query = Query.find_by_id(session[:query][:id]) if session[:query][:id]
-        @query ||= Query.new(:name => "_", :project => @project, :filters => session[:query][:filters])
+        @query ||= Query.new(:name => "_", :project => @project, :filters => session[:query][:filters], :column_names => session[:query][:column_names])
         @query.project = @project
       end
     end
