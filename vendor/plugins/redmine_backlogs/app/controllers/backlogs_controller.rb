@@ -27,7 +27,7 @@ class BacklogsController < ApplicationController
     @story_tracker = @parent_project.trackers.detect {|tracker| 'story' == tracker.name.downcase }
     
     @backlog_title = "Product Backlog Tickets"
-    @backlog_url = url_for(:controller => 'issues', :set_filter => 1,
+    @backlog_url = url_for(:controller => 'issues', :set_filter => 1, :project_id => @parent_project,
       :fields => [:status_id, :tracker_id, :fixed_version_id], 
       :operators => {:status_id => 'o', :tracker_id => '!', :fixed_version_id => '!*'}, 
       :values => {:status_id => 'o', :fixed_version_id => [1], :tracker_id => [3]},
