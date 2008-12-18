@@ -145,7 +145,9 @@ module Redmine
         options = options.dup
         
         # menu item position
-        if before = options.delete(:before)
+        if options.delete(:first)
+          position = 0
+        elsif before = options.delete(:before)
           position = @menu_items.collect(&:name).index(before)
         elsif after = options.delete(:after)
           position = @menu_items.collect(&:name).index(after)
