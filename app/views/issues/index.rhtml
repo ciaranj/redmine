@@ -5,7 +5,21 @@
     <% form_tag({ :controller => 'queries', :action => 'new' }, :id => 'query_form') do %>
     <%= hidden_field_tag('project_id', @project.id) if @project %>
     <fieldset id="filters"><legend><%= l(:label_filter_plural) %></legend>
-    <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
+      <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
+    </fieldset>
+    <fieldset id="column_selection">
+      <legend>Columns</legend>
+      <%= hidden_field_tag 'settings[issue_list_default_columns][]', '' %>
+      <p>
+        <% @query.available_columns.each do |column| %>
+          <label>
+            <%= check_box_tag 'column_names[]', column.name, @query.columns.include?(column) %>
+            <%= column.caption %>
+          </label>
+        <% end %>
+      </p>
+    </fieldset>
+    <fieldset id="filter_apply">
     <p class="buttons">
     <%= link_to_remote l(:button_apply), 
                        { :url => { :set_filter => 1 },
