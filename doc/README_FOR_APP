@@ -3,3 +3,5 @@
 Redmine is a flexible project management web application written using Ruby on Rails framework.
 
 More details can be found at http://www.redmine.org
+
+This has custom hacks that we've added to do the kind of scrum we do for the Scrum Alliance web team
