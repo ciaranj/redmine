@@ -2,4 +2,4 @@
   <p><%= link_to_issue(issue) %>: <%=h issue.subject %></p>
   <%= progress_bar issue.done_ratio, :width => '50px', :legend => issue.assigned_to || "&nbsp;" %>
 </li>
-<%= draggable_element(dom_id(issue), :revert => '"failure"') %>
+<%= draggable_element(dom_id(issue), :revert => '"failure"', :constraint => "'horizontal'") %>

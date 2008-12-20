@@ -27,28 +27,65 @@
   <![endif]-->
   
   <style type="text/css" media="screen">
-    .status_container { width: <%= (100/@statuses.size).floor %>%; }
+    #task_board { width: 100%; }
+      #task_board .hovered { background: #FEFF9F; }
+      #task_board .story_subject { font-size: 10px; }
+      
+      #task_board tr th { width: <%= 100 / (@statuses.size + 1) %>%;}
+      #task_board tr th { border-bottom: 1px solid #ddd; }
+      #task_board tr td { vertical-align: top; border: 1px solid #ddd; border-width: 0 1px 1px 0; }
+      
+      #task_board ul { padding: 0; list-style: none; margin: 0; }
+        #task_board ul li { margin-bottom: 10px; background: #FFFFCF; padding: 3px 3px 0 3px; cursor: pointer; border: 1px solid #ffff55;}
+          #task_board ul li p { border-bottom:1px solid #ddd; font-size:10px; margin-bottom: 4px; padding-bottom:2px; }
+          #task_board ul li .pourcent { border-bottom: 0; margin-bottom: 0; }
+          
   </style>
 <% end %>
 
 
 <h2><%= @version.name %> Task Board</h2>
-<div id="statuses" class="clearfix">
-  <% @statuses.each do |status| %>
-    <dl id="<%= dom_id(status) %>" class="status_container">
-      <dt><%= status.name %></dt>
-      <dd>
-        <ul id="<%= dom_id(status, 'list') %>">
-          <% unless @issues_by_status[status].blank? -%>
-            <%= render :partial => 'issue', :collection => @issues_by_status[status] %>
-          <% end -%>
-        </ul>
-      </dd>
-    </dl>
-    <%= drop_receiving_element(dom_id(status), 
-      :accept => status.name.gsub(" ",'').underscore,
-      :hoverclass => 'hovered',
-      :url => {:controller => 'task_boards', :action => 'update_issue_status'}, 
-      :with => "'id=' + (element.id.split('_').last()) + '&status_id=#{status.id}'") %>
-  <% end -%>
-</div>
+<table id="task_board">
+  <thead>
+    <tr>
+      <% if @stories_with_tasks.any? -%><th>&nbsp;</th><% end -%>
+      <% @statuses.each do |status| %>
+        <th><%= status.name %></th>
+      <% end -%>
+    </tr>
+  </thead>
+  <tbody>
+    <% @stories_with_tasks.each do |story, tasks_by_status| %>
+      <tr>
+        <td><p class="story_subject"><%= link_to_issue(story) %>: <%= story.subject %></p></td>
+        <% @statuses.each do |status| -%>
+          <td id="<%= dom_id(story, status.name.gsub(' ','').underscore) %>">
+            <ul id="<%= dom_id(story, status.name.gsub(' ','').underscore + '_list') %>">
+              <%= render :partial => 'issue', :collection => Array(tasks_by_status[status]) %>
+            </ul>
+          </td>
+          <%= drop_receiving_element(dom_id(story, status.name.gsub(' ','').underscore),
+            :accept => status.name.gsub(" ",'').underscore,
+            :hoverclass => 'hovered',
+            :url => {:controller => 'task_boards', :action => 'update_issue_status'}, 
+            :with => "'id=' + (element.id.split('_').last()) + '&status_id=#{status.id}'") %>
+        <% end -%>
+      </tr>
+    <% end -%>
+    <tr>
+      <% if @stories_with_tasks.any? -%><td>&nbsp;</td><% end -%>
+      <% @statuses.each do |status| -%>
+        <td id="independent_<%= status.name.gsub(' ','').underscore %>">
+          <ul id="independent_<%= status.name.gsub(' ','').underscore %>_list">
+            <%= render :partial => 'issue', :collection => Array(@independent_tickets[status]) %>
+          </ul>
+          <%= drop_receiving_element("independent_#{status.name.gsub(' ','').underscore}",
+            :accept => status.name.gsub(" ",'').underscore,
+            :hoverclass => 'hovered',
+            :url => {:controller => 'task_boards', :action => 'update_issue_status'}, 
+            :with => "'id=' + (element.id.split('_').last()) + '&status_id=#{status.id}'") %>
+        </td>
+      <% end -%>
+    </tr>
+  </tbody>
+</table>
