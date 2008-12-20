@@ -13,7 +13,7 @@
       </thead>
       <tbody>  
         <% for issue in issues %>
-          <tr id="issue-<%= issue.id %>" class="issue hascontextmenu <%= cycle('odd', 'even') %> <%= "status-#{issue.status.position} priority-#{issue.priority.position}" %>">
+          <tr id="issue-<%= issue.id %>" class="hascontextmenu <%= cycle('odd', 'even') %> <%= css_issue_classes(issue) %>">
             <td><%=h issue.project.name %></td>
             <td class="id">
               <%= check_box_tag("ids[]", issue.id, false, :style => 'display:none;') %>
