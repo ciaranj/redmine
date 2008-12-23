@@ -1,10 +1,11 @@
-
-
-/*.status_container { float: left; min-height: 400px; }
-  #statuses .hovered { background: #FEFF9F; }
-  .status_container dt { text-transform: uppercase; font-size: 11px; border: 1px solid #bbb; border-width: 1px 0; text-align: center; color: #333; padding: 4px 0; }
-  .status_container dd { margin: 0; padding: 10px; }
-  .status_container ul { padding: 0; list-style: none; }
-    .status_container ul li { margin-bottom: 10px; background: #FFFFCF; padding: 3px 3px 0 3px; cursor: pointer; border: 1px solid #ffff55;}
-      .status_container ul li p { border-bottom:1px solid #ddd; font-size:10px; margin-bottom: 4px; padding-bottom:2px; }
-      .status_container ul li .pourcent { border-bottom: 0; margin-bottom: 0; }*/
+#task_board { width: 100%; }
+  #task_board .hovered { background: #FEFF9F; }
+  #task_board .story_subject { font-size: 10px; }
+  
+  #task_board tr th { border-bottom: 1px solid #ddd; }
+  #task_board tr td { vertical-align: top; border: 1px solid #ddd; border-width: 0 1px 1px 0; }
+  
+  #task_board ul { padding: 0; list-style: none; margin: 0; }
+    #task_board ul li { margin-bottom: 10px; background: #FFFFCF; paddinhg: 3px 3px 0 3px; cursor: pointer; border: 1px solid #ffff55;}
+      #task_board ul li p { border-bottom:1px solid #ddd; font-size:10px; margin-bottom: 4px; padding-bottom:2px; }
+      #task_board ul li .pourcent { border-bottom: 0; margin-bottom: 0; }
