@@ -20,6 +20,7 @@ role :db, "scrum01.managed.contegix.com", :primary => true
 after "deploy:update_code", :redmine_symlinks
 task :redmine_symlinks do
   run "ln -fns  #{shared_path}/dblogin.yml #{release_path}/config/dblogin.yml"
+  run "ln -fns  #{shared_path}/email.yml #{release_path}/config/email.yml"
 end
 
 namespace :deploy do
