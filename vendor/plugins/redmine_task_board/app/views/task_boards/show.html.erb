@@ -36,7 +36,8 @@
 <table id="task_board">
   <thead>
     <tr>
-      <% if @stories_with_tasks.any? -%><th>&nbsp;</th><% end -%>
+      <% if (@stories_with_tasks.keys - [nil]).size > 0 -%><th>&nbsp;</th><% end -%>
+      
       <% @statuses.each do |status| %>
         <th><%= status.name %></th>
       <% end -%>
@@ -45,27 +46,23 @@
   <tbody>
     <% @stories_with_tasks.each do |story, tasks_by_status| %>
       <tr>
-        <td><p class="story_subject"><%= link_to_issue(story) %>: <%= story.subject %></p></td>
+        <% if (@stories_with_tasks.keys - [nil]).size > 0 -%>
+          <td>
+            <% if story.nil? -%>&nbsp;<% else -%>
+              <p class="story_subject"><%= link_to_issue(story) %>: <%= story.subject %></p>
+            <% end -%>
+          </td>
+        <% end -%>
+        
         <% @statuses.each do |status| -%>
-          <td id="<%= dom_id(story, status.class_name) %>">
-            <ul id="<%= dom_id(story, status.class_name + '_list') %>">
+          <td id="<%= task_board_dom_id(story, status) %>">
+            <ul id="<%= task_board_dom_id(story, status, 'list') %>">
               <%= render :partial => 'issue', :collection => Array(tasks_by_status[status]) %>
             </ul>
+            <%= task_board_drop_receiving_element(task_board_dom_id(story, status), status) %>
           </td>
-          <%= task_board_drop_receiving_element(dom_id(story, status.class_name), status) %>
         <% end -%>
       </tr>
     <% end -%>
-    <tr>
-      <% if @stories_with_tasks.any? -%><td>&nbsp;</td><% end -%>
-      <% @statuses.each do |status| -%>
-        <td id="independent_<%= status.class_name %>">
-          <ul id="independent_<%= status.class_name %>_list">
-            <%= render :partial => 'issue', :collection => Array(@independent_tickets[status]) %>
-          </ul>
-          <%= task_board_drop_receiving_element("independent_#{status.class_name}", status) %>
-        </td>
-      <% end -%>
-    </tr>
   </tbody>
 </table>

@@ -6,14 +6,10 @@ class TaskBoardsController < ApplicationController
   
   def show
     @statuses = IssueStatus.all(:order => "position asc")
-
-    all_issues = @version.fixed_issues
-    all_issues = all_issues.group_by(&:story)
     
-    @independent_tickets = all_issues.delete(nil).reject {|issue| all_issues.keys.include?(issue) }
-    @independent_tickets = @independent_tickets.group_by(&:status)
-
-    @stories_with_tasks = all_issues
+    @stories_with_tasks = @version.fixed_issues.group_by(&:story)
+    @stories_with_tasks[nil] = @stories_with_tasks[nil].reject {|issue| @stories_with_tasks.keys.include?(issue) }
+    
     @stories_with_tasks.each do |story, tasks|
       @stories_with_tasks[story] = tasks.group_by(&:status)
     end
@@ -28,8 +24,7 @@ class TaskBoardsController < ApplicationController
     
     render :update do |page|
       page.remove dom_id(@issue)
-      element_id = @issue.story ? dom_id(@issue.story, @status.name.gsub(' ','').underscore + "_list") : "independent_#{@status.name.gsub(' ','').underscore}_list"
-      page.insert_html :bottom, element_id, :partial => "issue", :object => @issue
+      page.insert_html :bottom, task_board_dom_id(@issue.story, @status, "list"), :partial => "issue", :object => @issue
     end
   end
   
