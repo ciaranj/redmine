@@ -3,6 +3,20 @@ RAILS_DEFAULT_LOGGER.info 'Starting Task Board plugin for RedMine'
 
 require_dependency 'task_board_listener'
 
+require_dependency 'scrum_alliance/redmine/issue_relation_extensions'
+require_dependency 'scrum_alliance/redmine/issue_status_extensions'
+require_dependency 'scrum_alliance/redmine/issue_extensions'
+require_dependency 'scrum_alliance/redmine/project_extensions'
+
+# Dependency loading hell. http://www.ruby-forum.com/topic/166578#new
+require 'dispatcher'
+Dispatcher.to_prepare do
+  Project.class_eval { include ScrumAlliance::Redmine::ProjectExtensions }
+  Issue.class_eval { include ScrumAlliance::Redmine::IssueExtensions }
+  IssueRelation.class_eval { include ScrumAlliance::Redmine::IssueRelationExtensions }
+  IssueStatus.class_eval { include ScrumAlliance::Redmine::IssueStatusExtensions }
+end
+
 Redmine::Plugin.register :redmine_task_board do
   name 'Redmine Task Board plugin'
   author 'Dan Hodos'

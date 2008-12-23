@@ -1,10 +1,3 @@
-module StoryFinder
-  def story
-    story = relations_to.detect {|rel| rel.relation_type == 'composes' }
-    story && story.issue_from
-  end
-end
-
 class TaskBoardsController < ApplicationController
   unloadable
   menu_item :task_board
@@ -15,7 +8,6 @@ class TaskBoardsController < ApplicationController
     @statuses = IssueStatus.all(:order => "position asc")
 
     all_issues = @version.fixed_issues
-    all_issues.each {|issue| issue.extend(StoryFinder)}
     all_issues = all_issues.group_by(&:story)
     
     @independent_tickets = all_issues.delete(nil).reject {|issue| all_issues.keys.include?(issue) }
@@ -29,7 +21,6 @@ class TaskBoardsController < ApplicationController
   
   def update_issue_status
     @issue = Issue.find(params[:id])
-    @issue.extend(StoryFinder)
     @issue.init_journal(User.current, "Automated status change from the Task Board")
 
     @status = IssueStatus.find(params[:status_id])

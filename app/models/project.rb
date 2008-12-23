@@ -254,10 +254,6 @@ class Project < ActiveRecord::Base
     p = Project.find(:first, :order => 'created_on DESC')
     p.nil? ? nil : p.identifier.to_s.succ
   end
-
-  def current_version
-    versions.detect {|version| version.created_on.to_date <= Date.current && version.effective_date >= Date.current }
-  end
   
 protected
   def validate
