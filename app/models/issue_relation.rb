@@ -23,11 +23,13 @@ class IssueRelation < ActiveRecord::Base
   TYPE_DUPLICATES   = "duplicates"
   TYPE_BLOCKS       = "blocks"
   TYPE_PRECEDES     = "precedes"
+  TYPE_COMPOSES     = 'composes'
   
   TYPES = { TYPE_RELATES =>     { :name => :label_relates_to, :sym_name => :label_relates_to, :order => 1 },
             TYPE_DUPLICATES =>  { :name => :label_duplicates, :sym_name => :label_duplicated_by, :order => 2 },
             TYPE_BLOCKS =>      { :name => :label_blocks, :sym_name => :label_blocked_by, :order => 3 },
-            TYPE_PRECEDES =>    { :name => :label_precedes, :sym_name => :label_follows, :order => 4 },
+            TYPE_PRECEDES =>    { :name => :label_precedes, :sym_name => :label_follows, :order => 4 }, 
+            TYPE_COMPOSES =>    { :name => :label_includes, :sym_name => :label_belongs_to, :order => 5 }
           }.freeze
   
   validates_presence_of :issue_from, :issue_to, :relation_type
