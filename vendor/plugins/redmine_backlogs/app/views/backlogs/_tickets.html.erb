@@ -62,6 +62,32 @@
     new Ajax.Updater("backlog_tickets", "<%= escape_javascript(@backlog_url) %>", 
       { asynchronous: true, evalScripts: true, method: 'GET', onComplete: function() {
         $('backlog_tickets').down('h2').update("<%= escape_javascript(@backlog_title) %>");
-      }});
+
+        $$("#issue_list tr").each(function(el) { 
+          el.innerHTML += "<td class='rank_handle'>&nbsp;</td>" 
+        });
+        
+        Sortable.create("issue_list", {
+          tag: 'tr', format: /^[^_]*-(.*)$/,containment: 'issue_list', 
+          handle: 'rank_handle',
+          constraint: 'vertical',
+          // ghosting: true,
+          hoverclass: 'sort_hover', 
+          // scroll: true, 
+          onUpdate: function(container) {
+            new Ajax.Request('<%= url_for(:action => "prioritize") %>', {
+              parameters: Sortable.serialize(container)
+            });
+          },
+          starteffect: function(element) {
+            element._originalBackground = element.getStyle('background-color');
+            element.setStyle({background: '#FEFF9F'});
+          },
+          endeffect: function(element) { 
+            element.setStyle({background: (element._originalBackground || '#fff')});
+          }
+        });
+      }
+    });
   });
 </script>

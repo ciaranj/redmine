@@ -32,7 +32,15 @@ class BacklogsController < ApplicationController
       :operators => {:status_id => 'o', :tracker_id => '!', :fixed_version_id => '!*'}, 
       :values => {:status_id => 'o', :fixed_version_id => [1], :tracker_id => [3]},
       :column_names => [:tracker, :priority, :subject, :updated_on, story_points_name].compact, 
-      :sort_key => "enumerations.position", :sort_order => 'desc')
+      :sort_key => "issues.rank", :sort_order => 'asc')
+  end
+  
+  def prioritize
+    params[:issue_list].each_with_index do |issue_id, idx|
+      Issue.update_all "rank = #{idx+1}", "id = #{issue_id}"
+    end
+    
+    render :nothing => true
   end
 
 private

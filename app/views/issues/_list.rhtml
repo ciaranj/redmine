@@ -9,7 +9,7 @@
           <%= column_header(column) %>
         <% end %>
 	</tr></thead>
-	<tbody>
+	<tbody id="issue_list">
 	<% issues.each do |issue| -%>
 	<tr id="issue-<%= issue.id %>" class="hascontextmenu <%= cycle('odd', 'even') %> <%= css_issue_classes(issue) %>">
 	    <td class="checkbox"><%= check_box_tag("ids[]", issue.id, false, :id => nil) %></td>
