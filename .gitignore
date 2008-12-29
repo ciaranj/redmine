@@ -2,3 +2,7 @@ log/*
 tmp/*
 db/schema.rb
 public/plugin_assets
+*~
+config/dblogin.yml
+*#
+.#*
