@@ -1,0 +1,262 @@
+
+<HTML xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+	<HEAD>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>
+			Backlog Items and Defects
+		</title>
+		<meta http-equiv="Expires" content="0">
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta name="CODE_LANGUAGE" content="C#">
+		<meta name="vs_defaultClientScript" content="JavaScript">
+		<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie3-2nav3-0">
+		<style>@page {mso-header-data: &LBacklog Items and Defects&R; mso-header-margin: .5in; mso-footer-margin: .5in; mso-page-orientation: landscape; margin: 1.0in .75in 1.0in .75in; }
+	TABLE { mso-displayed-decimal-separator: "."; mso-displayed-thousand-separator: "," }
+	TR { mso-height-source: auto }
+	COL { mso-width-source: auto }
+	BR { mso-data-placement: same-cell }
+	.cell { BORDER-RIGHT: medium none; BORDER-TOP: medium none; FONT-WEIGHT: 400; FONT-SIZE: 10pt; VERTICAL-ALIGN: bottom; BORDER-LEFT: medium none; COLOR: windowtext; BORDER-BOTTOM: medium none; FONT-STYLE: normal; FONT-FAMILY: Arial; WHITE-SPACE: nowrap; TEXT-DECORATION: none; mso-number-format: General; mso-rotate: 0; mso-background-source: auto; mso-pattern: auto; mso-generic-font-family: auto; mso-font-charset: 0; mso-protection: locked visible; mso-style-name: Normal; mso-style-id: 0 }
+	TD { BORDER-RIGHT: medium none; PADDING-RIGHT: 1px; BORDER-TOP: medium none; PADDING-LEFT: 1px; FONT-WEIGHT: 400; FONT-SIZE: 10pt; VERTICAL-ALIGN: bottom; BORDER-LEFT: medium none; COLOR: windowtext; PADDING-TOP: 1px; BORDER-BOTTOM: medium none; FONT-STYLE: normal; FONT-FAMILY: Arial; WHITE-SPACE: nowrap; TEXT-DECORATION: none; mso-number-format: General; mso-rotate: 0; mso-background-source: auto; mso-pattern: auto; mso-generic-font-family: auto; mso-font-charset: 0; mso-protection: locked visible; mso-style-parent: cell; mso-ignore: padding }
+	H1 { FONT-SIZE: 14pt; FONT-FAMILY: sans-serif }
+	H2 { FONT-SIZE: 12pt; FONT-FAMILY: sans-serif }
+	.columnheader { BACKGROUND: #dfdfdf; mso-pattern: auto none }
+	.rowheader { BACKGROUND: #dfdfdf; mso-pattern: auto none }
+	.data-plain { mso-style-parent: cell }
+	.data-currency { TEXT-ALIGN: right; mso-number-format: "#,##0"; mso-style-parent: cell }
+	.data-amount { TEXT-ALIGN: right; mso-number-format: "#,##0.00"; mso-style-parent: cell }
+	.data-percent { TEXT-ALIGN: right; mso-number-format: Percent; mso-style-parent: cell }
+	.data-date { TEXT-ALIGN: center; mso-number-format: "Short Date"; mso-style-parent: cell }
+	.context-header { TEXT-ALIGN: right; mso-style-parent: cell }
+	</style>
+		<!--[if gte mso 9]>
+	<xml>
+		<x:ExcelWorkbook>
+			<x:ExcelWorksheets>
+				<x:ExcelWorksheet>
+					<x:Name>Backlog Items and Defects</x:Name>
+					<x:WorksheetOptions>
+						<x:FreezePanes/>
+						<x:FrozenNoSplit/>
+						<x:SplitHorizontal>0</x:SplitHorizontal>
+						<x:TopRowBottomPane>0</x:TopRowBottomPane>
+						<x:SplitVertical>0</x:SplitVertical>
+						<x:LeftColumnRightPane>0</x:LeftColumnRightPane>
+					</x:WorksheetOptions>
+				</x:ExcelWorksheet>
+			</x:ExcelWorksheets>
+		</x:ExcelWorkbook>
+	</xml>
+	<![endif]-->
+	</HEAD>
+	<body>
+		<table>
+			<tr>
+				<td><span><table cellpadding="0" cellspacing="0">
+	<tbody>
+		<tr>
+			<td class="columnheader">Title</td><td class="columnheader">ID</td><td class="columnheader">Priority</td><td class="columnheader">Estimate</td><td class="columnheader">Project</td><td class="columnheader">Description</td>
+		</tr><tr>
+			<td class="data-plain">Establish a Certification Advisory Board</td><td class="data-plain">B-01077</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Certification</td><td class="data-plain"><P>The plan is to establish a Certification Advisory Board that will be made up of a small number of Scrum Alliance luminaries who will organize themselves for the purpose of providing expert information, ideas, and vision to guide the standards, policies and procedures for implementing the Scrum Alliance certification program.&nbsp; Individuals to be invited will be identified with input from Jim Cundiff and Dave Minor.&nbsp;</P>
+<P>Tasks: Draft and send letter of invitation; follow-up communications with meeting details; work with Orlando gathering planners to schedule small meeting room with projector and white board (or flip chart); work with Jim and Chad to develop an agenda; draft an initial CAB charter (to include purpose, organization, financials, etc.); </P>
+<P>&nbsp;</P></td>
+		</tr><tr>
+			<td class="data-plain">Create Logo Mockups - Part 1</td><td class="data-plain">B-01001</td><td class="data-plain"></td><td class="data-amount">0.00</td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Create image/branding for ScrumHub</td><td class="data-plain">B-01002</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Create online Scrum Primer</td><td class="data-plain">B-01003</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Launch CSPO Exam by April 1</td><td class="data-plain">B-01004</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Create Scrum Teams in Organization</td><td class="data-plain">B-01005</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Inspect and Adapt all Certification Programs</td><td class="data-plain">B-01006</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Create Logo Mockups - part 2</td><td class="data-plain">B-01007</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Brand Gatherings</td><td class="data-plain">B-01008</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Google Mail for Domain</td><td class="data-plain">B-01028</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Product Backlog</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: Appointments</td><td class="data-plain">B-01052</td><td class="data-plain"></td><td class="data-amount">0.00</td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user group organizer, I would like to schedule an appointment with Ken to have him speak at our event.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: Events Logistics</td><td class="data-plain">B-01053</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user group organizer, I would like to know how to prepare for and set up for a Kickoff with Ken.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: User Validation</td><td class="data-plain">B-01054</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As ScrumHub, I would like to know that the person signing up for a presentation is really who they say they are.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: Event Feedback</td><td class="data-plain">B-01055</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to provide feedback on the ScrumHub event that I attended.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: Charge for Events</td><td class="data-plain">B-01056</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As ScrumHub, I would like the ability to charge money for certain events.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: Event Description</td><td class="data-plain">B-01057</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user group organizer, I can see an in-depth description of the event: User Group Kickoff with Ken</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: KB: Audio Library</td><td class="data-plain">B-01059</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to subscribe to podcasts about Scrum.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: KB: Research</td><td class="data-plain">B-01060</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to know what research has been completed or what is underway.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: KB: Research</td><td class="data-plain">B-01061</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to search research findings.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: KB: Surveys</td><td class="data-plain">B-01062</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to participate in ScrumHub surveys.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: URL Validate</td><td class="data-plain">B-01063</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As site admin, I want to make sure the GoDaddy URL works and brings up a homepage.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: Appointments Identify and Test</td><td class="data-plain">B-01064</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">Identify and test an appointment facility.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: KB: As ScrumHub, I need a knowledgebase tool.</td><td class="data-plain">B-01065</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: ScrumHub needs to be announced on Scrum Alliance.org</td><td class="data-plain">B-01067</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">Stacia will generate content and Ken will make sure it gets integrated.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: KB: Video library</td><td class="data-plain">B-01068</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to view Scrum-related videos on ScrumHub.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: KB: Video library</td><td class="data-plain">B-01069</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">Determine file sharing/viewing technology.<br><br>Explore alternatives and bring this to Dave while they're in sprint 2. <br><br><br></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB [S1]: Decompose PBL for Events and KB</td><td class="data-plain">B-01070</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">Breakdown Product Backlog for Events and Knowledgebase in preparation for ScrumHub Sprint 2.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: Search Knowledgebase</td><td class="data-plain">B-01049</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to quickly get an answer to my question without having to subscribe to Yahoo scrumdevelopment.</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: Events</td><td class="data-plain">B-01050</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Scrum Hub</td><td class="data-plain">As a user, I would like to see a list of free and paid events from ScrumHub.</td>
+		</tr><tr>
+			<td class="data-plain">Rest of the Multiple Items per Purchase tasks</td><td class="data-plain">B-01101</td><td class="data-plain">Low</td><td class="data-amount">45.00</td><td class="data-plain">Website</td><td class="data-plain">As a As a user, I expect that when I renew my dual membership, I can renew as both a CSM and a CSPO with one payment (now set at $50(. At the same time, as an accountant for SA, I want to be able to track a dual member renewal payment and make visible the fact that I am issuing a credit for one of the two memberships (making it free), partly because in the future I may want to charge more money to be a dual member than a single member.</td>
+		</tr><tr>
+			<td class="data-plain">User receipts show multiple line items</td><td class="data-plain">B-01099</td><td class="data-plain">High</td><td class="data-amount">21.00</td><td class="data-plain">Website</td><td class="data-plain"><P>As a As a user, I expect that when I renew my dual membership, I can renew as both a CSM and a CSPO with one payment (now set at $50(. At the same time, as an accountant for SA, I want to be able to track a dual member renewal payment and make visible the fact that I am issuing a credit for one of the two memberships (making it free), partly because in the future I may want to charge more money to be a dual member than a single member.</P>
+<P>Really want membership costs X, certification Y.</P>
+<P>Assumption: all of these are available to the receipt. We've never shown Membership as a line item on a receipt.</P>
+<P>HTML and plain text emails. It's a pain to make sure they're both right.</P>
+<P>May also need to replace multiple&nbsp;templates with one. This could be a breaking point.</P>
+<P>2 receipts in production. Renewal and Course Payment (trainer)</P>
+<P>CSP renewal receipts are not in production but do exist.</P>
+<P>What if we created a new template from scratch? Then moved all other receipts to use this template. We could create new receipt easily. Concerned about level of converting the rest of the receipts to use this template... tests come into play.</P>
+<P>Outcome: Have unified receipt for all of our purchases.</P></td>
+		</tr><tr>
+			<td class="data-plain">As an Admin, I can download a (file that can be opened in Excel) of Proposals that indicates for which Gatherings the Proposal has been submitted</td><td class="data-plain">B-01047</td><td class="data-plain"></td><td class="data-amount">3.00</td><td class="data-plain">Website</td><td class="data-plain">The downloaded file should contain 1 column for each (upcoming?) proposal.<br><br>== Tech notes:<br><br>* rename CallForPresController to ProposalController<br>* clean up existing routes (perhaps use a map.resources :proposals)<br>* move logic from existing download action into Proposal model<br>* combine download action with index action and use respond_to<br><br>Note: Estimate based on completing other work on cleaning up downloads<br></td>
+		</tr><tr>
+			<td class="data-plain">As Jim, I would like for us to never show a CST as inactive</td><td class="data-plain">B-01104</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">because it could jeopardize our trademarking of CST(tm).&nbsp; We can internally note that a CST is inactive and not allow them to upload students, but they should be visible on the CST page.<br></td>
+		</tr><tr>
+			<td class="data-plain">As an editor, I'd like to embed youtube video into a resource</td><td class="data-plain">B-01105</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so that we do not have to host the video, but it will stream directly from our site and we can catalog and tag correctly.<br><br>technical notes: our tinymce editor needs to allow the following tags:<br>object<br>param<br>embed<br></td>
+		</tr><tr>
+			<td class="data-plain">As an editor, I'd like to be able to add images on a resource</td><td class="data-plain">B-01106</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">through the tinymce editor based on it's public url so that I can display a photo from another site.<br></td>
+		</tr><tr>
+			<td class="data-plain">As a presenter, I'd like to select that I am a CSC when submitting a presentation</td><td class="data-plain">B-01107</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so that people can see my kewl skills and that I'm not quite a CST yet.<br><br>(multiple pullldowns on the form)<br></td>
+		</tr><tr>
+			<td class="data-plain">As an admin, I'd like the ability to filter alerts based on title</td><td class="data-plain">B-01108</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so that I can quickly see only the type of alerts that I am looking for.<br><br>should include ability to filter "includes" and "does not include"<br></td>
+		</tr><tr>
+			<td class="data-plain">As an admin, I'd like an editor role that does not have full rights</td><td class="data-plain">B-01095</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">osticket email attachments stripped</td><td class="data-plain">D-01001</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">When I email osticket with an attachment, a ticket is created, but the attachment disappears.&nbsp; <br></td>
+		</tr><tr>
+			<td class="data-plain">osticket empty body rejected</td><td class="data-plain">D-01002</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">When a ticket is sent to osticket with only a subject line and no body, the email is rejected by osticket and the sysadmin receives an API error email.&nbsp; <br><br>ticket posted with osticket:<br>http://osticket.com/forums/project.php?issueid=103<br><br>Pipe bug no email body<br>email submitted with no body creates API error<br>when an email is submitted and the body is blank (assuming the subject is detail enough of the issue), the ticket is not accepted by osticket (1.6 RC4) and the sysadmin receives an API Error email as well as the sender receiving a mailer-daemon permanent failure.<br><br>My expectation is that the ticket would be created without any body or with the subject duplicated as the body.<br></td>
+		</tr><tr>
+			<td class="data-plain">As a CSM Candidate, I can take my CSM examination online</td><td class="data-plain">B-01022</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">From the dashboard have a link to an exam process summary page that is dynamically editable by admins.&nbsp; From that page provide one link per exam the user is eligible to take that starts the exam. &nbsp;<br><br>The user should be seamlessly handed off to i-qbox with all the necessary information to start the proper exam.&nbsp; Exam results are posted back from i-qbox and we should capture those results.<br><br></td>
+		</tr><tr>
+			<td class="data-plain">As an admin, I would like support requests to automatically create tickets in osTicket</td><td class="data-plain">B-01078</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so that I do not have to copy/paste the data from emails into osticket.<br></td>
+		</tr><tr>
+			<td class="data-plain">As Scrum Alliance management, I want to limit the number of exam attempts per training class to 4</td><td class="data-plain">B-01082</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">Because unlimited number of exam attempts dilutes the value of the exam question bank and certification program.<br><br>Tech&nbsp; notes:<br>- validate that number of exam results per user certification(?) is in 0..4<br>- modify the UI to notify the Member that they cannot retake said exam<br>&nbsp; - show user that they have used "n of 4 attempts"<br></td>
+		</tr><tr>
+			<td class="data-plain">As a Scrum Alliance management, I want to charge money for some exams attempts by a user</td><td class="data-plain">B-01083</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">this would happen on 3rd and 4th attempts.&nbsp; The user receives two complimentary attempts.<br><br>Tech notes:<br>-&nbsp; modify the user's exam eligibility based on paying for the exam.<br>- build UI and workflow for payment<br>- probably more.<br></td>
+		</tr><tr>
+			<td class="data-plain">As a CST, I want to email all non-logged in members of a course</td><td class="data-plain">B-01084</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">with one click so that I do not have to click "resend" on each student to send their welcome email from the course page.<br><br>become a CST, visit a course page, click on Students tab.&nbsp; Press link "Resend email to all users with status 'Never Logged In'"<br></td>
+		</tr><tr>
+			<td class="data-plain">As a CST, I need to know the date/time of the last email sent to a member</td><td class="data-plain">B-01085</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so that I can remind them at reasonable intervals to log in.<br><br>Become a CST, view a closed course, click students tab.&nbsp; add column after 'email address' for 'last sent' with date/timestamp.<br></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: As  ScrumHub user, I would like to search a list of FAQs so that I can get answers to common questions without having to join Scrumdevelopment</td><td class="data-plain">B-01086</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">http://scrumspace.org/ionadmin/faqsupport/samplefaqsupport.php</td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: As a ScrumHub user, I would like to search content by category and sub-category</td><td class="data-plain">B-01087</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">This would replace the tag functionality on the resources page of SA.org. I would be able to search content by "Gatherings" "Events" "Articles" "Video" "FAQ" "Other Resources"<br><br>Under these broad categories i would see tags and could search that way if I like.<br><br>Problem we're trying to solve: The resources page is difficult to navigate and doesn't appear very organized. <br></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: As a ScrumHub user, I would like to rate answers on the FAQ so that others will know which answers I found useful.</td><td class="data-plain">B-01088</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: As a ScrumHub user, I would like to be able to submit a new question to the FAQ if my question does not appear there.</td><td class="data-plain">B-01089</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">SCRUMHUB: As the ScrumHub admin, I would like the ability to upload content files so that users may access them.</td><td class="data-plain">B-01090</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">iow, give stacia admin access on the site.<br></td>
+		</tr><tr>
+			<td class="data-plain">Generic Call for Presentations copy</td><td class="data-plain">B-01072</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a Visitor, the call for presentations page should reflect better that I can submit for multiple Gatherings<br><br>We've added the ability to submit for multiple gatherings, but the dynamic page that's used for /call_for_pres has Orlando hard coded all over it.&nbsp; Seems like the copy for that page needs to better reflect the potential for multiple call for presentations being open at one time<br></td>
+		</tr><tr>
+			<td class="data-plain">CSP payment should reset renewal notifications</td><td class="data-plain">D-01003</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">When a payment is made for a CSP, it does not reset the automatic renewal notifications for that member<br><br>I.E. User 19035<br>Nov 14 2008 $100 for CSP payment made<br>Nov 18, 2008 3 days past due reminder email sent<br>Dec 1, 2008 15 days past due reminder sent<br><br>As a member, I would expect after I made my payment I would not get reminder emails saying that I didn't make a payment. <br><br></td>
+		</tr><tr>
+			<td class="data-plain">Password reset reply action</td><td class="data-plain">B-01073</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As membership manager, I would like the email I get about resetting a password to have a link for approval directly in the email so that I can verify the change and make a one-step change to the account.&nbsp; <br><br></td>
+		</tr><tr>
+			<td class="data-plain">Password reset email</td><td class="data-plain">B-01074</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">when an password request has been approved by the membership manager, send them a notification that their request has been completed.<br></td>
+		</tr><tr>
+			<td class="data-plain">Require Profile fields for new or returning member</td><td class="data-plain">B-01023</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">Require certain profile fields either on initial login or during renewal process.<br></td>
+		</tr><tr>
+			<td class="data-plain">CSM Limited Membership</td><td class="data-plain">B-01043</td><td class="data-plain">Low</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a CSM Candidate who has just had an account created, I would like to have access to my profile, dashboard, and a study area for a period of 1 year while I work on completing my certification.<br><br>Limited members can be displayed, but may not show certified until they complete the certifications.<br></td>
+		</tr><tr>
+			<td class="data-plain">Call for Presentations - Presenter registration data</td><td class="data-plain">B-01025</td><td class="data-plain">Low</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As Gathering coordinator, I'd like the Call for Presentations form to gather presenter registration information so that registrations for presenters of accepted presentations can be created on behalf of the presenter without further queries of them.<br><br>fields needed attached to story<br></td>
+		</tr><tr>
+			<td class="data-plain">Bug: Adding tags in resources</td><td class="data-plain">B-01032</td><td class="data-plain">Low</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As an administrator, I can create and select tags for a new resource without a file attached, but they are not saved with the resource.<br><br>Steps:<br>1) login as admin<br>2) click Resources -&gt; New Resource<br>3) type a letter and select a tag to complete<br>4) add it to the tag area with the green arrow button<br>5) fill in title and description and save<br><br>expected behavior:<br>new resource will have tags attached to it.<br><br>actual behavior:<br>no tags are added to the resource.<br><br><br></td>
+		</tr><tr>
+			<td class="data-plain">Breakout receipt by line items</td><td class="data-plain">B-01040</td><td class="data-plain">Low</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"><p>the customer receipt for <span class="caps">CSP</span> needs a breakout of the costs  <br>
+(certification fees, membership fess, credit for membership paid).</p>
+<p>In the subject use “<span class="caps">CSP</span> Payment”. avoid the term “application”  <br>
+throughout process</p>
+<p>mark: A <span class="caps">CSP</span> email receipt needs more detail items than other payment types.<br>
+I will change payments to hold multiple items.<br>
+and then populate those items with the various fees for a <span class="caps">CSP</span>.</p></td>
+		</tr><tr>
+			<td class="data-plain">CST Proxy User</td><td class="data-plain">B-01009</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a CST, I want to give access to a proxy user to some or all areas of my account to edit as if it were me.&nbsp; Actions by the proxy should be logged and viewable by me.&nbsp; Permissions are decided by me for these areas: my profile, my courses, my student upload process, my course payments.<br></td>
+		</tr><tr>
+			<td class="data-plain">CST Proxy for more than 1 CST</td><td class="data-plain">B-01010</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a CST Proxy, I want to be given access to more than one CST so that I can complete actions for more than one CST without having to login/logout as different users or manage multiple accounts.<br></td>
+		</tr><tr>
+			<td class="data-plain">CST can have more than one Proxy</td><td class="data-plain">B-01011</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a CST, I want to create and give access to more than one Proxy.<br></td>
+		</tr><tr>
+			<td class="data-plain">Scrum Dicsussion Forums</td><td class="data-plain">B-01012</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Automate CSP payments</td><td class="data-plain">B-01013</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Automate CSC payments</td><td class="data-plain">B-01014</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr><tr>
+			<td class="data-plain">Homepage Redesign Implementation</td><td class="data-plain">B-01030</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">Focus on:<BR>
+<UL>
+<LI>Gatherings
+<LI>User Groups
+<LI>Courses/Training
+<LI>Content<BR></LI></UL>
+<P>Next steps are to move to&nbsp;one mockup.</P></td>
+		</tr><tr>
+			<td class="data-plain">User Group Ownership</td><td class="data-plain">B-01017</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a member, I would like to have permission to edit my user group profile so that changes to our profile do not have to be filtered through SA staff.<br><br>- more than one member should be allowed to edit a user group<br></td>
+		</tr><tr>
+			<td class="data-plain">Event management by User Group owner</td><td class="data-plain">B-01018</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a User Group owner, I would like to create/edit user group meeting events.<br></td>
+		</tr><tr>
+			<td class="data-plain">Event submission by member</td><td class="data-plain">B-01019</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As a member, I would like to submit an event fro posting consideration.<br></td>
+		</tr><tr>
+			<td class="data-plain">Event submission management</td><td class="data-plain">B-01020</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As an admin, I'd like to approve/deny events submitted for consideration.<br><br>email the submitter with a decision.<br></td>
+		</tr><tr>
+			<td class="data-plain">Gathering Presentation Response</td><td class="data-plain">B-01021</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">As gathering coordinator, I'd like to send an auto response to anyone submitting a presentation.&nbsp; <br><br>- A "Thank you" confirmation plus a note when they can expect a response.<br></td>
+		</tr><tr>
+			<td class="data-plain">Pickup window cleanup</td><td class="data-plain">B-01027</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">Delete pickup window files after 7 days<br><br>PMT SC1185<br></td>
+		</tr><tr>
+			<td class="data-plain">Bug: As an Admin or Trainer, removing all Trainers from an existing Course should remove the trainers and display an error</td><td class="data-plain">B-01033</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"><p>It is impossible to (in one user action) remove <span class="caps">ALL</span> trainers from an existing course.</p>
+<p>Steps to Reproduce:</p>
+<p>1. Find an existing course with more than one trainer. (It will also
+work with a course that has a single trainer, though the actual result
+is clearer with more)<br>
+2. Click the ‘edit’ pencil icon to edit the course<br>
+3. For each trainer, click the red ‘X’ next to their name to remove them from the course<br>
+4. Save the course</p>
+<p>Expected Result:</p>
+<p>The page displays an error, noting that at least one trainer must be selected for the course.</p>
+<p>Actual Result:</p>
+<p>The page does not remove <span class="caps">ANY</span> of the trainers from the course, dumps you back to the ‘show course’ page, and does not give any explanatory error message.</p>
+<p>——-</p>
+<p>Technical details:</p>
+<p>The reason this occurs is because when there are no selected
+trainers, there is no ‘trainers’ parameter serialized to the controller.</p>
+<p>When this parameter is missing, the ‘add_trainers_from_params’
+after_filter on update (added when CoursesModule is included) bails out
+early without actually trying to change the trainers associated with
+the course.</p><p><br></p><p><br></p><h3><br></h3></td>
+		</tr><tr>
+			<td class="data-plain">As ScrumHub admin, I would like to add/edit/delete FAQs</td><td class="data-plain">B-01094</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"><br></td>
+		</tr><tr>
+			<td class="data-plain">As ScrumHub admin, I want to organize FAQs into hierarchial categories</td><td class="data-plain">B-01096</td><td class="data-plain">High</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so users can drill down into topics to find their answers<br></td>
+		</tr><tr>
+			<td class="data-plain">As ScrumHub admin, I want to be able to order the FAQs</td><td class="data-plain">B-01097</td><td class="data-plain">Medium</td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain">so that important questions appear first for the user.<br></td>
+		</tr><tr>
+			<td class="data-plain">google analytics</td><td class="data-plain">B-01046</td><td class="data-plain"></td><td class="data-amount"></td><td class="data-plain">Website</td><td class="data-plain"></td>
+		</tr>
+	</tbody>
+</table></span></td>
+			</tr>
+		</table>
+		
+	</body>
+</HTML>

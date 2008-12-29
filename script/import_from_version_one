@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+require File.dirname(__FILE__) + '/../config/environment'
+require 'hpricot'
+
+ProjectMapping = { 'Product Backlog' => 'scrumalliance', 
+                   'Website' => 'website', 
+                   'Scrum Hub' => 'scrumhub', 
+                   'Certification' => 'certification' }
+
+PriorityMapping = { '' => 'Normal', 'Medium' => 'Normal', 'High' => 'High', 'Low' => 'Low' }
+
+all_projects = Project.all
+all_priorities = Enumeration.get_values "IPRI"
+
+author = User.find_by_login "dminor"
+tracker = Tracker.find_by_name "Story"
+
+# Title, ID, Priority, Estimate, Project, Description
+doc = Hpricot(File.read("stories.xml"))
+Issue.transaction do
+  (doc/"tbody tr").each do |row|
+    cells = Array(row/"td")
+    next if cells.first.classes.include?('columnheader')
+    cells = cells.map(&:inner_text)
+    
+    project = all_projects.detect {|project| project.identifier == ProjectMapping[cells[4]] }
+    priority = all_priorities.detect {|priority| priority.name == PriorityMapping[cells[2]] }
+    
+    subject = "#{cells[0]} (#{cells[1]})"
+    issue = project.issues.build(:subject => subject,
+                                 :priority_id => priority.id,
+                                 :description => cells[5].blank? ? subject : cells[5],
+                                 :author_id => author.id,
+                                 :tracker_id => tracker.id)
+                                 
+    issue.save!
+  end
+end
