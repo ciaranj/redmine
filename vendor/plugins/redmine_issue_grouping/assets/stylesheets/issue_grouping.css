@@ -1,0 +1,3 @@
+.issue_list_group_heading { color: #000; font-weight: bold; }
+  #content table.list .issue_list_group_heading td { padding: 20px 2px 5px 2px; margin-top: 10px; }
+    #content table.list .issue_list_group_heading td:hover { background: #fff; }

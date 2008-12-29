@@ -44,6 +44,13 @@ class IssuesController < ApplicationController
   include IssuesHelper
   helper :timelog
 
+  module StoryFinder
+    def story
+      story = relations_to.detect {|rel| rel.relation_type == 'composes' }
+      story && story.issue_from
+    end
+  end
+
   def index
     sort_init "#{Issue.table_name}.id", "desc"
     sort_update
@@ -63,6 +70,13 @@ class IssuesController < ApplicationController
                            :conditions => @query.statement,
                            :limit  =>  limit,
                            :offset =>  @issue_pages.current.offset
+
+      @issues.each {|issue| issue.extend(StoryFinder)}
+      @issues = @issues.group_by {|issue| issue.send(params[:group]) } unless params[:group].blank?
+      if 'story' == params[:group]
+        @issues[nil] = @issues[nil].reject {|issue| 'Story' == issue.tracker.name }
+      end
+      
       respond_to do |format|
         format.html { render :template => 'issues/index.rhtml', :layout => !request.xhr? }
         format.atom { render_feed(@issues, :title => "#{@project || Setting.app_title}: #{l(:label_issue_plural)}") }

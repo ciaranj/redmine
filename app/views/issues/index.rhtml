@@ -22,6 +22,9 @@
         <% end %>
       </p>
     </fieldset>
+    <fieldset>
+      Group: <%= select_tag :group, options_for_select([['',''], ['Story', 'story'], ['Assigned to', 'assigned_to']], params[:group]) %>
+    </fieldset>
     <fieldset id="filter_apply">
     <p class="buttons">
     <%= link_to_remote l(:button_apply), 
