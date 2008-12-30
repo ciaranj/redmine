@@ -11,12 +11,13 @@ module ScrumAlliance
         tasks && tasks.map(&:issue_to)
       end
 
-      def done_ratio
-        return read_attribute(:done_ratio) if tasks.blank?
-        total_estimate = tasks.sum(&:estimated_hours)
-        hours_done = tasks.sum { |t| t.estimated_hours * (t.done_ratio / 100.0) }
-        100 - (((total_estimate - hours_done) / total_estimate) * 100).to_i
-      end
+#       def done_ratio
+#         return read_attribute(:done_ratio) if tasks.blank?
+#         total_estimate = tasks.map(&:estimated_hours).map(&:to_i).sum
+#         hours_done = tasks.sum { |t| t.estimated_hours.to_i * (t.done_ratio / 100.0) }
+# logger.error("")        
+#         100 - (((total_estimate - hours_done) / total_estimate) * 100).to_i
+#       end
     end # IssueExtensions
   end # Redmine
 end # ScrumAlliance
