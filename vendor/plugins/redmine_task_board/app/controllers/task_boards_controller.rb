@@ -8,7 +8,9 @@ class TaskBoardsController < ApplicationController
     @statuses = IssueStatus.all(:order => "position asc")
     
     @stories_with_tasks = @version.fixed_issues.group_by(&:story)
-    @stories_with_tasks[nil] = @stories_with_tasks[nil].reject {|issue| @stories_with_tasks.keys.include?(issue) }
+    if @stories_with_tasks[nil]
+      @stories_with_tasks[nil] = @stories_with_tasks[nil].reject {|issue| @stories_with_tasks.keys.include?(issue) }
+    end
     
     @stories_with_tasks.each do |story, tasks|
       @stories_with_tasks[story] = tasks.group_by(&:status)
