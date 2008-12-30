@@ -4,4 +4,4 @@
 #add_backlog_ticket { background: #fff; border: 1px solid #ddd; margin-top: 5px; padding-left: 10px; }
   #add_backlog_ticket a { padding-top: 6px; padding-bottom: 8px; display: block; }
 
-#backlog_tickets td.rank_handle { cursor: pointer; background: url(/images/bullet_reorder.png) no-repeat right center; padding-left: 20px; }
+.product_backlog td.rank_handle { cursor: pointer; background: url(../images/bullet_reorder.png) no-repeat right center; padding-left: 20px; }

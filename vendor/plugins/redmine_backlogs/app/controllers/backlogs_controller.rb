@@ -36,8 +36,15 @@ class BacklogsController < ApplicationController
   end
   
   def prioritize
-    params[:issue_list].each_with_index do |issue_id, idx|
-      Issue.update_all "rank = #{idx+1}", "id = #{issue_id}"
+    dragged_id = params[:dragged_id] =~ /issue-(\d+)/ && $1
+    issue = Issue.find(dragged_id)
+    
+    new_position = params[:issue_list].index(dragged_id)
+
+    if new_position == params[:issue_list].size - 1 # end of list
+      issue.insert_at(Issue.find(params[:issue_list][-2]).rank)
+    else # beginning (0) or middle (non-0)
+      issue.insert_at(Issue.find(params[:issue_list][new_position+1]).rank)
     end
     
     render :nothing => true

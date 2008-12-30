@@ -4,6 +4,7 @@ class AddRankToIssues < ActiveRecord::Migration
     change_table :issues do |table|
       table.integer :rank, :default => 0
     end
+    update "update issues set rank = id"
   end
 
   def self.down
