@@ -17,6 +17,13 @@ ScrumAlliance.Backlog = Class.create({
   }
 });
 
+ScrumAlliance.SprintBacklog = Class.create(ScrumAlliance.Backlog, {
+  initialize: function($super, containerElementId, backlogTitle) {
+    $super(containerElementId, backlogTitle);
+    this.containerElement.addClassName('sprint_backlog');
+  }
+});
+
 ScrumAlliance.ProductBacklog = Class.create(ScrumAlliance.Backlog, {
   initialize: function($super, containerElementId, backlogTitle) {
     $super(containerElementId, backlogTitle);

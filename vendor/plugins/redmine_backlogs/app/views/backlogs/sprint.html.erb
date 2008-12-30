@@ -2,7 +2,7 @@
 <script type="text/javascript" charset="utf-8">
   document.observe("dom:loaded", function(){
     $('content').writeAttribute('data-url', "<%= escape_javascript(@backlog_url) %>")
-    new ScrumAlliance.Backlog('content', 'Sprint Backlog Tickets')
+    new ScrumAlliance.SprintBacklog('content', 'Sprint Backlog Tickets')
   });
 </script>
 
