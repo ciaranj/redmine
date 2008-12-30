@@ -44,13 +44,6 @@ class IssuesController < ApplicationController
   include IssuesHelper
   helper :timelog
 
-  module StoryFinder
-    def story
-      story = relations_to.detect {|rel| rel.relation_type == 'composes' }
-      story && story.issue_from
-    end
-  end
-
   def index
     sort_init "#{Issue.table_name}.id", "desc"
     sort_update
@@ -71,10 +64,10 @@ class IssuesController < ApplicationController
                            :limit  =>  limit,
                            :offset =>  @issue_pages.current.offset
 
-      @issues.each {|issue| issue.extend(StoryFinder)}
-      @issues = @issues.group_by {|issue| issue.send(params[:group]) } unless params[:group].blank?
-      if 'story' == params[:group]
-        @issues[nil] = @issues[nil].reject {|issue| 'Story' == issue.tracker.name }
+      if @query.group
+        @issues = @issues.group_by {|issue| issue.send(@query.group) }
+        @issues[nil] = @issues[nil].reject(&:story?) if 'story' == @query.group && @issues[nil]
+        @issues.delete(nil) if @issues[nil].blank?
       end
       
       respond_to do |format|
@@ -480,7 +473,8 @@ private
         @query = Query.new(:name => "_")
         @query.project = @project
         
-        @query.column_names = params[:column_names] if params[:column_names]
+        @query.column_names = params[:column_names] unless params[:column_names].blank?
+        @query.group = params[:group] unless params[:group].blank?
         
         if params[:fields] and params[:fields].is_a? Array
           params[:fields].each do |field|
@@ -491,10 +485,10 @@ private
             @query.add_short_filter(field, params[field]) if params[field]
           end
         end
-        session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :column_names => @query.column_names}
+        session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :column_names => @query.column_names, :group => params[:group]}
       else
         @query = Query.find_by_id(session[:query][:id]) if session[:query][:id]
-        @query ||= Query.new(:name => "_", :project => @project, :filters => session[:query][:filters], :column_names => session[:query][:column_names])
+        @query ||= Query.new(:name => "_", :project => @project, :filters => session[:query][:filters], :column_names => session[:query][:column_names], :group => session[:query][:group])
         @query.project = @project
       end
     end

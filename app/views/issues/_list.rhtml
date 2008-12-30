@@ -15,7 +15,7 @@
       <% if issues.respond_to?(:keys) -%>
         <% issues.each do |group, values| %>
           <tr class="issue_list_group_heading">
-            <td colspan="<%= query.columns.size + 2 %>">
+            <td colspan="<%= group_columns_to_span(group, query) %>">
               <%= group_header(group) %>
             </td>
           </tr>

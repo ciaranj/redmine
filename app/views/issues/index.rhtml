@@ -22,8 +22,9 @@
         <% end %>
       </p>
     </fieldset>
-    <fieldset>
-      Group: <%= select_tag :group, options_for_select([['',''], ['Story', 'story'], ['Assigned to', 'assigned_to']], params[:group]) %>
+    <fieldset id="group_selection">
+      <legend>Group</legend>
+      <%= select_tag :group, grouping_options(@query) %>
     </fieldset>
     <fieldset id="filter_apply">
     <p class="buttons">

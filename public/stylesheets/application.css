@@ -180,8 +180,6 @@ fieldset#filters tr.filter { height: 2em; }
 fieldset#filters td.add-filter { text-align: right; vertical-align: top; }
 .buttons { font-size: 0.9em; }
 
-#column_selection { border-top: 1px solid #eee; margin-top: 7px; margin-bottom: 8px; }
-  #column_selection legend small { margin-left: 5px; }
 #filter_apply { margin-bottom: 16px; }
 
 div#issue-changesets {float:right; width:45%; margin-left: 1em; margin-bottom: 1em; background: #fff; padding-left: 1em; font-size: 90%;}

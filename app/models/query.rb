@@ -49,6 +49,8 @@ class QueryCustomFieldColumn < QueryColumn
 end
 
 class Query < ActiveRecord::Base
+  attr_accessor :group
+  
   belongs_to :project
   belongs_to :user
   serialize :filters
@@ -253,6 +255,7 @@ class Query < ActiveRecord::Base
   def column_names=(names)
     names = names.select {|n| n.is_a?(Symbol) || !n.blank? } if names
     names = names.collect {|n| n.is_a?(Symbol) ? n : n.to_sym } if names
+    names.push(names.delete(:done_ratio)) if names.include?(:done_ratio) # force done ratio to the end
     write_attribute(:column_names, names)
   end
   

@@ -16,6 +16,7 @@ class BacklogsController < ApplicationController
     
     @backlog_title = "Sprint Backlog Tickets"    
     @backlog_url = url_for(:controller => 'issues', :project_id => @project, :set_filter => 1, 
+      :group => 'story', :per_page => 100,
       :fields => [:status_id, :fixed_version_id], 
       :operators => {:status_id => '*', :fixed_version_id => '='}, 
       :values => {:status_id => [1], :fixed_version_id => [@current_sprint.id]},
