@@ -13,7 +13,7 @@ class BurndownChart
   
   def chart
     Gchart.line(
-      :size => '900x333', 
+      :size => '750x400', 
       :data => data,
       :axis_with_labels => 'x,y',
       :axis_labels => [dates.map {|d| d.strftime("%m-%d") }.join("|"), hours_left_labels],
@@ -31,31 +31,31 @@ class BurndownChart
   
   def sprint_data
     @sprint_data ||= dates.map do |date|
-      issues = version.fixed_issues.select {|issue| issue.created_on.to_date <= date }
+      issues = all_issues.select {|issue| issue.created_on.to_date <= date }
       issues.inject(0) do |total_hours_left, issue|
-        journal = issue.journals.find(:first, 
-          :conditions => ["created_on <= ?", date], 
-          :order => "created_on desc", 
-          :select => "journal_details.value", 
-          :joins => "left join journal_details on journal_details.journal_id = journals.id and journal_details.prop_key = 'done_ratio'")
+        done_ratio_details = issue.journals.map(&:details).flatten.select {|detail| 'done_ratio' == detail.prop_key }
+        details_today_or_earlier = done_ratio_details.select {|a| a.journal.created_on.to_date <= date }
+
+        last_done_ratio_change = details_today_or_earlier.sort_by {|a| a.journal.created_on }.last
+
+        ratio = if last_done_ratio_change
+          last_done_ratio_change.value
+        elsif done_ratio_details.size > 0
+          0
+        else
+          issue.done_ratio.to_i
+        end
         
-        ratio = journal ? journal.value.to_i : 0 # e.g. 70
-        total_hours_left += (issue.estimated_hours.to_i * (100-ratio)/100)
+        total_hours_left += (issue.estimated_hours.to_i * (100-ratio.to_i)/100)
       end
     end
   end
   
   def ideal_data
-    hours = version.fixed_issues.map do |issue|
-      journal = issue.journals.find(:first, 
-        :conditions => ["created_on <= ?", start_date], 
-        :order => "created_on desc", 
-        :select => "journal_details.value",
-        :joins => "left join journal_details on journal_details.journal_id = journals.id and journal_details.prop_key = 'estimated_hours'")
-      
-      journal ? journal.value.to_i : issue.estimated_hours.to_i
-    end.sum
-    
-    [hours, 0]
+    [sprint_data.first, 0]
+  end
+  
+  def all_issues
+    version.fixed_issues.find(:all, :include => [{:journals => :details}, :relations_from, :relations_to])
   end
 end
