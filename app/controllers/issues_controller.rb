@@ -64,7 +64,7 @@ class IssuesController < ApplicationController
                            :limit  =>  limit,
                            :offset =>  @issue_pages.current.offset
 
-      if @query.group
+      unless @query.group.blank?
         @issues = @issues.group_by {|issue| issue.send(@query.group) }
         @issues[nil] = @issues[nil].reject(&:story?) if 'story' == @query.group && @issues[nil]
         @issues.delete(nil) if @issues[nil].blank?
