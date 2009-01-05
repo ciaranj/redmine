@@ -24,16 +24,15 @@ class BacklogsController < ApplicationController
   end
   
   def product
-    @parent_project = @project.parent || @project
-    @story_tracker = @parent_project.trackers.detect {|tracker| 'story' == tracker.name.downcase }
+    @story_tracker = @project.trackers.detect {|tracker| 'story' == tracker.name.downcase }
     
     @backlog_title = "Product Backlog Tickets"
-    @backlog_url = url_for(:controller => 'issues', :set_filter => 1, :project_id => @parent_project,
+    @backlog_url = url_for({:controller => 'issues', :set_filter => 1, :project_id => @project,
       :fields => [:status_id, :tracker_id, :fixed_version_id], 
       :operators => {:status_id => 'o', :tracker_id => '!', :fixed_version_id => '!*'}, 
       :values => {:status_id => 'o', :fixed_version_id => [1], :tracker_id => [3]},
       :column_names => [:tracker, :priority, :subject, :updated_on, story_points_name].compact, 
-      :sort_key => "issues.rank", :sort_order => 'asc')
+      :sort_key => "issues.rank", :sort_order => 'asc'})
   end
   
   def prioritize
