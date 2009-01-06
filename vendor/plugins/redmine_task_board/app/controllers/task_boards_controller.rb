@@ -18,11 +18,13 @@ class TaskBoardsController < ApplicationController
   end
   
   def update_issue_status
+    @status = IssueStatus.find(params[:status_id])
+    
     @issue = Issue.find(params[:id])
     @issue.init_journal(User.current, "Automated status change from the Task Board")
-
-    @status = IssueStatus.find(params[:status_id])
-    @issue.update_attribute(:status_id, @status.id)
+    attrs = {:status_id => @status.id}
+    attrs.merge!(:assigned_to_id => User.current.id) unless @issue.assigned_to_id?
+    @issue.update_attributes(attrs)
     
     render :update do |page|
       page.remove dom_id(@issue)
