@@ -63,15 +63,17 @@ class IssuesController < ApplicationController
                            :conditions => @query.statement,
                            :limit  =>  limit,
                            :offset =>  @issue_pages.current.offset
-
-      unless @query.group.blank?
-        @issues = @issues.group_by {|issue| issue.send(@query.group) }
-        @issues[nil] = @issues[nil].reject(&:story?) if 'story' == @query.group && @issues[nil]
-        @issues.delete(nil) if @issues[nil].blank?
-      end
       
       respond_to do |format|
-        format.html { render :template => 'issues/index.rhtml', :layout => !request.xhr? }
+        format.html do
+          unless @query.group.blank?
+            @issues = @issues.group_by {|issue| issue.send(@query.group) }
+            @issues[nil] = @issues[nil].reject(&:story?) if 'story' == @query.group && @issues[nil]
+            @issues.delete(nil) if @issues[nil].blank?
+          end
+          
+          render :template => 'issues/index.rhtml', :layout => !request.xhr?
+        end
         format.atom { render_feed(@issues, :title => "#{@project || Setting.app_title}: #{l(:label_issue_plural)}") }
         format.csv  { send_data(issues_to_csv(@issues, @project).read, :type => 'text/csv; header=present', :filename => 'export.csv') }
         format.pdf  { send_data(render(:template => 'issues/index.rfpdf', :layout => false), :type => 'application/pdf', :filename => 'export.pdf') }
