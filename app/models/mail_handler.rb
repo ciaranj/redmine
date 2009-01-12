@@ -90,14 +90,20 @@ class MailHandler < ActionMailer::Base
     end
     issue.subject = email.subject.chomp.toutf8
     issue.description = plain_text_body
+    # custom fields
+    issue.custom_field_values = issue.available_custom_fields.inject({}) do |h, c|
+      if value = get_keyword(c.name, :override => true)
+        h[c.id] = value
+      end
+      h
+    end
     issue.save!
     add_attachments(issue)
     logger.info "MailHandler: issue ##{issue.id} created by #{user}" if logger && logger.info
-    # send notification before adding watchers since they were cc'ed
-    Mailer.deliver_issue_add(issue) if Setting.notified_events.include?('issue_added')
     # add To and Cc as watchers
     add_watchers(issue)
-    
+    # send notification after adding watchers so that they can reply to Redmine
+    Mailer.deliver_issue_add(issue) if Setting.notified_events.include?('issue_added')
     issue
   end
   
@@ -156,8 +162,8 @@ class MailHandler < ActionMailer::Base
     end
   end
   
-  def get_keyword(attr)
-    if @@handler_options[:allow_override].include?(attr.to_s) && plain_text_body =~ /^#{attr}:[ \t]*(.+)$/i
+  def get_keyword(attr, options={})
+    if (options[:override] || @@handler_options[:allow_override].include?(attr.to_s)) && plain_text_body =~ /^#{attr}:[ \t]*(.+)$/i
       $1.strip
     elsif !@@handler_options[:issue][attr].blank?
       @@handler_options[:issue][attr]

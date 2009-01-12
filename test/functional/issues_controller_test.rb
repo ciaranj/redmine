@@ -137,6 +137,16 @@ class IssuesControllerTest < Test::Unit::TestCase
     assert_not_nil assigns(:issues)
     assert_equal 'application/pdf', @response.content_type
   end
+  
+  def test_index_sort
+    get :index, :sort_key => 'tracker'
+    assert_response :success
+    
+    sort_params = @request.session['issuesindex_sort']
+    assert sort_params.is_a?(Hash)
+    assert_equal 'tracker', sort_params[:key]
+    assert_equal 'ASC', sort_params[:order]
+  end
 
   def test_gantt
     get :gantt, :project_id => 1
@@ -167,16 +177,16 @@ class IssuesControllerTest < Test::Unit::TestCase
   def test_gantt_export_to_pdf
     get :gantt, :project_id => 1, :format => 'pdf'
     assert_response :success
-    assert_template 'gantt.rfpdf'
     assert_equal 'application/pdf', @response.content_type
+    assert @response.body.starts_with?('%PDF')
     assert_not_nil assigns(:gantt)
   end
 
   def test_cross_project_gantt_export_to_pdf
     get :gantt, :format => 'pdf'
     assert_response :success
-    assert_template 'gantt.rfpdf'
     assert_equal 'application/pdf', @response.content_type
+    assert @response.body.starts_with?('%PDF')
     assert_not_nil assigns(:gantt)
   end
   
@@ -242,6 +252,14 @@ class IssuesControllerTest < Test::Unit::TestCase
                                             :content => /Notes/ } }
   end
 
+  def test_show_export_to_pdf
+    get :show, :id => 3, :format => 'pdf'
+    assert_response :success
+    assert_equal 'application/pdf', @response.content_type
+    assert @response.body.starts_with?('%PDF')
+    assert_not_nil assigns(:issue)
+  end
+
   def test_get_new
     @request.session[:user_id] = 2
     get :new, :project_id => 1, :tracker_id => 1
@@ -283,7 +301,7 @@ class IssuesControllerTest < Test::Unit::TestCase
                           :priority_id => 5,
                           :estimated_hours => '',
                           :custom_field_values => {'2' => 'Value for field 2'}}
-    assert_redirected_to 'issues/show'
+    assert_redirected_to :controller => 'issues', :action => 'show'
     
     issue = Issue.find_by_subject('This is the test_new issue')
     assert_not_nil issue
@@ -302,7 +320,7 @@ class IssuesControllerTest < Test::Unit::TestCase
                           :subject => 'This is the test_new issue',
                           :description => 'This is the description',
                           :priority_id => 5}
-    assert_redirected_to 'issues/show'
+    assert_redirected_to :controller => 'issues', :action => 'show'
   end
   
   def test_post_new_with_required_custom_field_and_without_custom_fields_param
@@ -334,9 +352,10 @@ class IssuesControllerTest < Test::Unit::TestCase
                             :priority_id => 5,
                             :watcher_user_ids => ['2', '3']}
     end
-    assert_redirected_to 'issues/show'
-    
     issue = Issue.find_by_subject('This is a new issue with watchers')
+    assert_not_nil issue
+    assert_redirected_to :controller => 'issues', :action => 'show', :id => issue
+    
     # Watchers added
     assert_equal [2, 3], issue.watcher_user_ids.sort
     assert issue.watched_by?(User.find(3))
@@ -350,16 +369,16 @@ class IssuesControllerTest < Test::Unit::TestCase
     @request.session[:user_id] = 2
     post :new, :project_id => 1, 
                :issue => {:tracker_id => 1,
-                          :subject => 'This is the test_new issue',
-                          # empty description
-                          :description => '',
+                          # empty subject
+                          :subject => '',
+                          :description => 'This is a description',
                           :priority_id => 6,
                           :custom_field_values => {'1' => 'Oracle', '2' => 'Value for field 2'}}
     assert_response :success
     assert_template 'new'
     
-    assert_tag :input, :attributes => { :name => 'issue[subject]',
-                                        :value => 'This is the test_new issue' }
+    assert_tag :textarea, :attributes => { :name => 'issue[description]' },
+                          :content => 'This is a description'
     assert_tag :select, :attributes => { :name => 'issue[priority_id]' },
                         :child => { :tag => 'option', :attributes => { :selected => 'selected',
                                                                        :value => '6' },
@@ -577,6 +596,24 @@ class IssuesControllerTest < Test::Unit::TestCase
     assert issue.journals.empty?
     # No email should be sent
     assert ActionMailer::Base.deliveries.empty?
+  end
+  
+  def test_post_edit_with_invalid_spent_time
+    @request.session[:user_id] = 2
+    notes = 'Note added by IssuesControllerTest#test_post_edit_with_invalid_spent_time'
+    
+    assert_no_difference('Journal.count') do
+      post :edit,
+           :id => 1,
+           :notes => notes,
+           :time_entry => {"comments"=>"", "activity_id"=>"", "hours"=>"2z"}
+    end
+    assert_response :success
+    assert_template 'edit'
+    
+    assert_tag :textarea, :attributes => { :name => 'notes' },
+                          :content => notes
+    assert_tag :input, :attributes => { :name => 'time_entry[hours]', :value => "2z" }
   end
 
   def test_bulk_edit

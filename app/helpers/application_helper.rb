@@ -147,6 +147,15 @@ module ApplicationHelper
     end
     content
   end
+  
+  # Renders flash messages
+  def render_flash_messages
+    s = ''
+    flash.each do |k,v|
+      s << content_tag('div', v, :class => "flash #{k}")
+    end
+    s
+  end
 
   # Truncates and returns the string as a single line
   def truncate_single_line(string, *args)
@@ -526,6 +535,7 @@ module ApplicationHelper
 
   def back_url_hidden_field_tag
     back_url = params[:back_url] || request.env['HTTP_REFERER']
+    back_url = CGI.unescape(back_url.to_s)
     hidden_field_tag('back_url', CGI.escape(back_url)) unless back_url.blank?
   end
 

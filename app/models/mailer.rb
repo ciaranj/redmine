@@ -40,6 +40,7 @@ class Mailer < ActionMailer::Base
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
+    @author = journal.user
     recipients issue.recipients
     # Watchers in cc
     cc(issue.watcher_recipients - @recipients)
@@ -58,7 +59,7 @@ class Mailer < ActionMailer::Base
     subject l(:mail_subject_reminder, issues.size)
     body :issues => issues,
          :days => days,
-         :issues_url => url_for(:controller => 'issues', :action => 'index', :set_filter => 1, :assigned_to_id => user.id, :sort_key => 'issues.due_date', :sort_order => 'asc')
+         :issues_url => url_for(:controller => 'issues', :action => 'index', :set_filter => 1, :assigned_to_id => user.id, :sort_key => 'due_date', :sort_order => 'asc')
   end
 
   def document_added(document)
@@ -190,7 +191,7 @@ class Mailer < ActionMailer::Base
     
     # URL options
     h = Setting.host_name
-    h = h.to_s.gsub(%r{\/.*$}, '') unless ActionController::AbstractRequest.relative_url_root.blank?
+    h = h.to_s.gsub(%r{\/.*$}, '') unless Redmine::Utils.relative_url_root.blank?
     default_url_options[:host] = h
     default_url_options[:protocol] = Setting.protocol
     
@@ -209,9 +210,10 @@ class Mailer < ActionMailer::Base
   def create_mail
     # Removes the current user from the recipients and cc
     # if he doesn't want to receive notifications about what he does
-    if User.current.pref[:no_self_notified]
-      recipients.delete(User.current.mail) if recipients
-      cc.delete(User.current.mail) if cc
+    @author ||= User.current
+    if @author.pref[:no_self_notified]
+      recipients.delete(@author.mail) if recipients
+      cc.delete(@author.mail) if cc
     end
     # Blind carbon copy recipients
     if Setting.bcc_recipients?
@@ -224,7 +226,7 @@ class Mailer < ActionMailer::Base
 
   # Renders a message with the corresponding layout
   def render_message(method_name, body)
-    layout = method_name.match(%r{text\.html\.(rhtml|rxml)}) ? 'layout.text.html.rhtml' : 'layout.text.plain.rhtml'
+    layout = method_name.to_s.match(%r{text\.html\.(rhtml|rxml)}) ? 'layout.text.html.rhtml' : 'layout.text.plain.rhtml'
     body[:content_for_layout] = render(:file => method_name, :body => body)
     ActionView::Base.new(template_root, body, self).render(:file => "mailer/#{layout}", :use_full_path => true)
   end

@@ -30,8 +30,6 @@ class IssuesController < ApplicationController
   include ProjectsHelper   
   helper :custom_fields
   include CustomFieldsHelper
-  helper :ifpdf
-  include IfpdfHelper
   helper :issue_relations
   include IssueRelationsHelper
   helper :watchers
@@ -43,11 +41,13 @@ class IssuesController < ApplicationController
   include SortHelper
   include IssuesHelper
   helper :timelog
+  include Redmine::Export::PDF
 
   def index
-    sort_init "#{Issue.table_name}.id", "desc"
-    sort_update
     retrieve_query
+    sort_init 'id', 'desc'
+    sort_update({'id' => "#{Issue.table_name}.id"}.merge(@query.columns.inject({}) {|h, c| h[c.name.to_s] = c.sortable; h}))
+    
     if @query.valid?
       limit = per_page_option
       respond_to do |format|
@@ -76,7 +76,7 @@ class IssuesController < ApplicationController
         end
         format.atom { render_feed(@issues, :title => "#{@project || Setting.app_title}: #{l(:label_issue_plural)}") }
         format.csv  { send_data(issues_to_csv(@issues, @project).read, :type => 'text/csv; header=present', :filename => 'export.csv') }
-        format.pdf  { send_data(render(:template => 'issues/index.rfpdf', :layout => false), :type => 'application/pdf', :filename => 'export.pdf') }
+        format.pdf  { send_data(issues_to_pdf(@issues, @project), :type => 'application/pdf', :filename => 'export.pdf') }
       end
     else
       # Send html if the query is not valid
@@ -87,9 +87,10 @@ class IssuesController < ApplicationController
   end
   
   def changes
-    sort_init "#{Issue.table_name}.id", "desc"
-    sort_update
     retrieve_query
+    sort_init 'id', 'desc'
+    sort_update({'id' => "#{Issue.table_name}.id"}.merge(@query.columns.inject({}) {|h, c| h[c.name.to_s] = c.sortable; h}))
+    
     if @query.valid?
       @journals = Journal.find :all, :include => [ :details, :user, {:issue => [:project, :author, :tracker, :status]} ],
                                      :conditions => @query.statement,
@@ -113,7 +114,7 @@ class IssuesController < ApplicationController
     respond_to do |format|
       format.html { render :template => 'issues/show.rhtml' }
       format.atom { render :action => 'changes', :layout => false, :content_type => 'application/atom+xml' }
-      format.pdf  { send_data(render(:template => 'issues/show.rfpdf', :layout => false), :type => 'application/pdf', :filename => "#{@project.identifier}-#{@issue.id}.pdf") }
+      format.pdf  { send_data(issue_to_pdf(@issue), :type => 'application/pdf', :filename => "#{@project.identifier}-#{@issue.id}.pdf") }
     end
   end
 
@@ -155,6 +156,7 @@ class IssuesController < ApplicationController
         attach_files(@issue, params[:attachments])
         flash[:notice] = l(:notice_successful_create)
         Mailer.deliver_issue_add(@issue) if Setting.notified_events.include?('issue_added')
+        call_hook(:controller_issues_new_after_save, { :params => params, :issue => @issue})
         redirect_to :controller => 'issues', :action => 'show', :id => @issue
         return
       end		
@@ -201,6 +203,7 @@ class IssuesController < ApplicationController
           flash[:notice] = l(:notice_successful_update)
           Mailer.deliver_issue_edit(journal) if Setting.notified_events.include?('issue_updated')
         end
+        call_hook(:controller_issues_edit_after_save, { :params => params, :issue => @issue, :time_entry => @time_entry, :journal => journal})
         redirect_to(params[:back_to] || {:action => 'show', :id => @issue})
       end
     end
@@ -353,7 +356,7 @@ class IssuesController < ApplicationController
     respond_to do |format|
       format.html { render :template => "issues/gantt.rhtml", :layout => !request.xhr? }
       format.png  { send_data(@gantt.to_image, :disposition => 'inline', :type => 'image/png', :filename => "#{@project.identifier}-gantt.png") } if @gantt.respond_to?('to_image')
-      format.pdf  { send_data(render(:template => "issues/gantt.rfpdf", :layout => false), :type => 'application/pdf', :filename => "#{@project.nil? ? '' : "#{@project.identifier}-" }gantt.pdf") }
+      format.pdf  { send_data(gantt_to_pdf(@gantt, @project), :type => 'application/pdf', :filename => "#{@project.nil? ? '' : "#{@project.identifier}-" }gantt.pdf") }
     end
   end
   

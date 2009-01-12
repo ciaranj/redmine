@@ -117,7 +117,7 @@ class ProjectsControllerTest < Test::Unit::TestCase
   def test_add_file
     set_tmp_attachments_directory
     @request.session[:user_id] = 2
-    Setting.notified_events << 'file_added'
+    Setting.notified_events = ['file_added']
     ActionMailer::Base.deliveries.clear
     
     assert_difference 'Attachment.count' do
@@ -138,7 +138,7 @@ class ProjectsControllerTest < Test::Unit::TestCase
   def test_add_version_file
     set_tmp_attachments_directory
     @request.session[:user_id] = 2
-    Setting.notified_events << 'file_added'
+    Setting.notified_events = ['file_added']
     
     assert_difference 'Attachment.count' do
       post :add_file, :id => 1, :version_id => '2',
@@ -285,6 +285,23 @@ class ProjectsControllerTest < Test::Unit::TestCase
     post :unarchive, :id => 1
     assert_redirected_to 'admin/projects'
     assert Project.find(1).active?
+  end
+  
+  def test_jump_should_redirect_to_active_tab
+    get :show, :id => 1, :jump => 'issues'
+    assert_redirected_to 'projects/ecookbook/issues'
+  end
+  
+  def test_jump_should_not_redirect_to_inactive_tab
+    get :show, :id => 3, :jump => 'documents'
+    assert_response :success
+    assert_template 'show'
+  end
+  
+  def test_jump_should_not_redirect_to_unknown_tab
+    get :show, :id => 3, :jump => 'foobar'
+    assert_response :success
+    assert_template 'show'
   end
   
   def test_project_menu

@@ -33,8 +33,6 @@ class ProjectsController < ApplicationController
   include SortHelper
   helper :custom_fields
   include CustomFieldsHelper   
-  helper :ifpdf
-  include IfpdfHelper
   helper :issues
   helper IssuesHelper
   helper :queries
@@ -200,8 +198,12 @@ class ProjectsController < ApplicationController
   end
   
   def list_files
-    sort_init "#{Attachment.table_name}.filename", "asc"
-    sort_update
+    sort_init 'filename', 'asc'
+    sort_update 'filename' => "#{Attachment.table_name}.filename",
+                'created_on' => "#{Attachment.table_name}.created_on",
+                'size' => "#{Attachment.table_name}.filesize",
+                'downloads' => "#{Attachment.table_name}.downloads"
+                
     @containers = [ Project.find(@project.id, :include => :attachments, :order => sort_clause)]
     @containers += @project.versions.find(:all, :include => :attachments, :order => sort_clause).sort.reverse
     render :layout => !request.xhr?
@@ -222,6 +224,11 @@ class ProjectsController < ApplicationController
   end
   
   def activity
+    if params[:jump]
+      # try to redirect to the requested menu item
+      redirect_to_project_menu_item(@project, params[:jump]) && return
+    end
+    
     @days = Setting.activity_days_default.to_i
     
     if params[:from]

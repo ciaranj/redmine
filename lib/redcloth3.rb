@@ -382,14 +382,14 @@ class RedCloth3 < String
                 (#{rcq})
                 (#{C})
                 (?::(\S+?))?
-                ([^\s\-].*?[^\s\-]|\w)
+                (\w|[^\s\-].*?[^\s\-])
                 #{rcq}
                 (?=[[:punct:]]|\s|\)|$)/x
             else
                 /(#{rcq})
                 (#{C})
                 (?::(\S+))?
-                ([^\s\-].*?[^\s\-]|\w)
+                (\w|[^\s\-].*?[^\s\-])
                 #{rcq}/xm 
             end
         [rc, ht, re, rtype]
@@ -470,8 +470,7 @@ class RedCloth3 < String
             style << "vertical-align:#{ v_align( $& ) };" if text =~ A_VLGN
         end
 
-        style << "#{ htmlesc $1 };" if not filter_styles and
-            text.sub!( /\{([^}]*)\}/, '' )
+        style << "#{ htmlesc $1 };" if text.sub!( /\{([^}]*)\}/, '' ) && !filter_styles
 
         lang = $1 if
             text.sub!( /\[([^)]+?)\]/, '' )
@@ -792,7 +791,10 @@ class RedCloth3 < String
             \s?
             (?:\(([^)]+?)\)(?="))?     # $title
             ":
-            ([\w\/]\S+?)               # $url
+            (                          # $url
+            (\/|https?:\/\/|s?ftps?:\/\/|www\.)
+            [\w\/]\S+?
+            )               
             (\/)?                      # $slash
             ([^\w\=\/;\(\)]*?)         # $post
             (?=<|\s|$)
@@ -800,7 +802,7 @@ class RedCloth3 < String
 #"
     def inline_textile_link( text ) 
         text.gsub!( LINK_RE ) do |m|
-            pre,atts,text,title,url,slash,post = $~[1..7]
+            pre,atts,text,title,url,proto,slash,post = $~[1..8]
 
             url, url_title = check_refs( url )
             title ||= url_title

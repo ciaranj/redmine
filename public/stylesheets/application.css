@@ -18,7 +18,7 @@ h4, .wiki h3 {font-size: 13px;padding: 2px 10px 1px 0px;margin-bottom: 5px; bord
   padding: 0px 0px 0px 0px;
   white-space:nowrap;
 }
-#top-menu a {color: #fff; padding-right: 8px; font-weight: bold;}
+#top-menu a {color: #fff; margin-right: 8px; font-weight: bold;}
 #top-menu #loggedas { float: right; margin-right: 0.5em; color: #fff; }
 
 #account {float:right;}
@@ -197,6 +197,7 @@ div#activity span.project:after, #search-results span.project:after { content: "
 div#activity dd span.description, #search-results dd span.description { display:block; }
 
 #search-results dd { margin-bottom: 1em; padding-left: 20px; margin-left:0px; }
+
 div#search-results-counts {float:right;}
 div#search-results-counts ul { margin-top: 0.5em; }
 div#search-results-counts  li { list-style-type:none; float: left; margin-left: 1em; }
@@ -213,6 +214,8 @@ dt.wiki-page { background-image: url(../images/wiki_edit.png); }
 dt.attachment { background-image: url(../images/attachment.png); }
 dt.document { background-image: url(../images/document.png); }
 dt.project { background-image: url(../images/projects.png); }
+
+#search-results dt.issue.closed { background-image: url(../images/ticket_checked.png); }
 
 div#roadmap fieldset.related-issues { margin-bottom: 1em; }
 div#roadmap fieldset.related-issues ul { margin-top: 0.3em; margin-bottom: 0.3em; }
@@ -314,6 +317,14 @@ div.flash.notice {
 	background-color: #dfffdf;
 	border-color: #9fcf9f;
 	color: #005f00;
+}
+
+div.flash.warning {
+  background: url(../images/warning.png) 8px 5px no-repeat;
+	background-color: #FFEBC1;
+	border-color: #FDBF3B;
+	color: #A6750C;
+  text-align: left;
 }
 
 .nodata, .warning {
