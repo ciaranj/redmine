@@ -41,6 +41,7 @@ class DecompositionsController < ApplicationController
     
     raise DecompositionException unless @issues.all?(&:valid?)
     
+    flash[:notice] = "Tickets saved. You're #{%w[awesome magnificent wonderful super-duper lovely fun neat-o peachy-keen rockin'].sort_by {rand}.first}!"
     redirect_to :action => 'index', :id => @issue.id
   rescue DecompositionException => exception
     render :action => 'index'
