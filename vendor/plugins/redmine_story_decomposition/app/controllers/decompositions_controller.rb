@@ -22,13 +22,13 @@ class DecompositionsController < ApplicationController
       Array(params[:issue]).each do |key, value|
         if 'new' == key.to_s
           value.each do |attrs|
-            issue = @project.issues.create(attrs.merge(:tracker_id => task_tracker.id, :author => User.current))
+            issue = @project.issues.create(attrs.merge(:tracker_id => task_tracker.id, :author => User.current, :fixed_version_id => @issue.fixed_version_id))
             @issues << issue
             @new_issues << issue
           end
         else
           issue = Issue.find(key)
-          issue.update_attributes(value)
+          issue.update_attributes(value.merge(:fixed_version_id => @issue.fixed_version_id))
           @issues << issue
         end
       end
