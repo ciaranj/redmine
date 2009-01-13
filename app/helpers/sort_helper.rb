@@ -91,7 +91,7 @@ module SortHelper
   # Use this to sort the controller's table items collection.
   #
   def sort_clause()
-    return ActiveRecord::Base.send(:sanitize_sql, "#{params[:sort_key]} #{params[:sort_order]}") if params[:sort_key].include?(',')
+    return ActiveRecord::Base.send(:sanitize_sql, "#{params[:sort_key]} #{params[:sort_order]}") if params[:sort_key] && params[:sort_key].include?(',')
     @sort_clause
   end
 
