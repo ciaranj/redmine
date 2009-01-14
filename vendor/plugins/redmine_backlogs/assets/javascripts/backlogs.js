@@ -25,7 +25,10 @@ ScrumAlliance.SprintBacklog = Class.create(ScrumAlliance.Backlog, {
   
   _backlogLoaded: function($super) {
     $super();
-    
+    this._setupContextualLinks();
+  },
+  
+  _setupContextualLinks: function() {
     allLink = new Element('a', { class: 'icon', href: this.containerElement.readAttribute('data-url') }).update("All");
     allLink.observe('click', this._loadContent.bind(this));
     
