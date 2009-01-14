@@ -15,12 +15,16 @@ class BacklogsController < ApplicationController
     @task_tracker = @project.trackers.detect {|tracker| 'task' == tracker.name.downcase }
     
     @backlog_title = "Sprint Backlog Tickets"    
-    @backlog_url = url_for(:controller => 'issues', :project_id => @project, :set_filter => 1, 
+    
+    backlog_url_opts = {:controller => 'issues', :project_id => @project, :set_filter => 1, 
       :group => 'story', :per_page => 100,
       :fields => [:status_id, :fixed_version_id], 
       :operators => {:status_id => '*', :fixed_version_id => '='}, 
       :values => {:status_id => [1], :fixed_version_id => [@current_sprint.id]},
-      :column_names => [:tracker, story_points_name, :priority, :subject, :assigned_to, :status, :estimated_hours, :done_ratio].compact)
+      :column_names => [:tracker, story_points_name, :priority, :subject, :assigned_to, :status, :estimated_hours, :done_ratio].compact}
+      
+    @backlog_url = url_for(backlog_url_opts)
+    @only_open_backlog_url = url_for(backlog_url_opts.merge(:operators => {:status_id => 'o', :fixed_version_id => '='}))
   end
   
   def product

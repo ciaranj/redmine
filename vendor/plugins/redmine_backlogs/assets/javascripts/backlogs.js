@@ -21,6 +21,27 @@ ScrumAlliance.SprintBacklog = Class.create(ScrumAlliance.Backlog, {
   initialize: function($super, containerElementId, backlogTitle) {
     $super(containerElementId, backlogTitle);
     this.containerElement.addClassName('sprint_backlog');
+  },
+  
+  _backlogLoaded: function($super) {
+    $super();
+    
+    allLink = new Element('a', { class: 'icon', href: this.containerElement.readAttribute('data-url') }).update("All");
+    allLink.observe('click', this._loadContent.bind(this));
+    
+    openLink = new Element('a', {class: 'icon', href: this.containerElement.readAttribute('data-open-url') }).update("Open");
+    openLink.observe('click', this._loadContent.bind(this));
+    
+    contextualLinks = new Element('div', { class: 'contextual' });
+    contextualLinks.appendChild(allLink);
+    contextualLinks.appendChild(openLink);
+    
+    this.containerElement.down('h2').insert({ before: contextualLinks });
+  },
+  
+  _loadContent: function(event) {
+    new Ajax.Updater('content', event.element().readAttribute('href'))
+    event.stop();
   }
 });
 
