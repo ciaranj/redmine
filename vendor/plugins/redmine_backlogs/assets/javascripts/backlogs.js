@@ -59,8 +59,11 @@ ScrumAlliance.ProductBacklog = Class.create(ScrumAlliance.Backlog, {
     if (!this._setupNeeded()) { return; }
     
     this.containerElement.down("thead tr").innerHTML += "<th>&nbsp;</th>";
-    $$("#issue_list tr").each(function(el) { 
-      el.innerHTML += "<td class='rank_handle'>&nbsp;</td>" 
+    $$("#issue_list tr[class!~issue_list_group_heading]").each(function(el) {
+      cell = new Element('td').update('&nbsp;')
+      if (!el.hasClassName('issue_list_group_heading')) { cell.addClassName('rank_handle') }
+      
+      el.appendChild(cell);
     });
     
     Sortable.create("issue_list", {
