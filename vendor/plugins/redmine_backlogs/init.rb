@@ -7,6 +7,9 @@ require 'dispatcher'
 Dispatcher.to_prepare do
   Issue.class_eval { include ScrumAlliance::Redmine::RankExtension }
   Query.available_columns << QueryColumn.new(:rank, :sortable => "#{Issue.table_name}.rank")
+  
+  Issue.class_eval { include ScrumAlliance::Redmine::StoryPointExtension::Issue }
+  Version.class_eval { include ScrumAlliance::Redmine::StoryPointExtension::Version }  
 end
  
 Redmine::Plugin.register :redmine_backlog do

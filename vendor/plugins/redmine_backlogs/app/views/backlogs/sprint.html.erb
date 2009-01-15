@@ -9,5 +9,14 @@
 
 <% content_for :sidebar do -%>
   <p id="add_backlog_ticket"><%= link_to "Add Task", {:controller => 'issues', :action => 'new', :tracker_id => @task_tracker, :project_id => @project, :issue => {:fixed_version_id => @current_sprint} }, :class => 'icon icon-add' %></p>
+
+  <h3>Sprint Stats</h3>
+  <p>
+    <strong><%= @current_sprint.story_points %></strong> story points<br/>
+    <strong><%= @current_sprint.estimated_hours %></strong> hours
+  </p>
+  
+  <p><%= image_tag(@velocity_chart.to_s) %></p>
+  
   <%= render :partial => 'issues/sidebar' %>
 <% end -%>
