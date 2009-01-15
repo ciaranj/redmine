@@ -31,10 +31,10 @@
 .sprint_backlog tr.even.status-3, .sprint_backlog table.list tbody tr.even.status-3:hover,
 .sprint_backlog table.list tr.status-3 a { color: #0AA3AF; }
 
-.sprint_backlog tr.odd.status-4, .sprint_backlog table.list tbody tr.odd.status-4:hover,
-.sprint_backlog tr.even.status-4, .sprint_backlog table.list tbody tr.even.status-4:hover,
-.sprint_backlog table.list tr.status-4 a { color: #999; text-decoration: line-through;}
-
 .sprint_backlog tr.odd.status-5, .sprint_backlog table.list tbody tr.odd.status-5:hover,
 .sprint_backlog tr.even.status-5, .sprint_backlog table.list tbody tr.even.status-5:hover,
-.sprint_backlog table.list tr.status-5 a { color: #CF0000; }
+.sprint_backlog table.list tr.status-5 a { color: #999; text-decoration: line-through;}
+
+.sprint_backlog tr.odd.status-4, .sprint_backlog table.list tbody tr.odd.status-4:hover,
+.sprint_backlog tr.even.status-4, .sprint_backlog table.list tbody tr.even.status-4:hover,
+.sprint_backlog table.list tr.status-4 a { color: #CF0000; }
