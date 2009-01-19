@@ -29,13 +29,13 @@ ScrumAlliance.SprintBacklog = Class.create(ScrumAlliance.Backlog, {
   },
   
   _setupContextualLinks: function() {
-    allLink = new Element('a', { class: 'icon', href: this.containerElement.readAttribute('data-url') }).update("All");
+    allLink = new Element('a', { 'class': 'icon', href: this.containerElement.readAttribute('data-url') }).update("All");
     allLink.observe('click', this._loadContent.bind(this));
     
-    openLink = new Element('a', {class: 'icon', href: this.containerElement.readAttribute('data-open-url') }).update("Open");
+    openLink = new Element('a', { 'class': 'icon', href: this.containerElement.readAttribute('data-open-url') }).update("Open");
     openLink.observe('click', this._loadContent.bind(this));
     
-    contextualLinks = new Element('div', { class: 'contextual' });
+    contextualLinks = new Element('div', { 'class': 'contextual' });
     contextualLinks.appendChild(allLink);
     contextualLinks.appendChild(openLink);
     
