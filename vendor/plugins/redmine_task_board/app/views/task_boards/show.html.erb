@@ -33,7 +33,7 @@
 
 
 <h2><%= @version.name %> Task Board</h2>
-<table id="task_board">
+<table id="task_board" cellspacing="0">
   <thead>
     <tr>
       <% if (@stories_with_tasks.keys - [nil]).size > 0 -%><th>&nbsp;</th><% end -%>
@@ -45,6 +45,7 @@
   </thead>
   <tbody>
     <% @stories_with_tasks.each do |story, tasks_by_status| %>
+      <% reset_cycle %>
       <tr>
         <% if (@stories_with_tasks.keys - [nil]).size > 0 -%>
           <td>
@@ -55,7 +56,7 @@
         <% end -%>
         
         <% @statuses.each do |status| -%>
-          <td id="<%= task_board_dom_id(story, status) %>">
+          <td id="<%= task_board_dom_id(story, status) %>" class="<%= cycle('odd', 'even') %>">
             <ul id="<%= task_board_dom_id(story, status, 'list') %>">
               <%= render :partial => 'issue', :collection => Array(tasks_by_status[status]) %>
             </ul>
