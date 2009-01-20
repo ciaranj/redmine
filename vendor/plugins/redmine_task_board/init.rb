@@ -1,7 +1,4 @@
 require 'redmine'
-RAILS_DEFAULT_LOGGER.info 'Starting Task Board plugin for RedMine'
-
-require_dependency 'task_board_listener'
 
 require_dependency 'scrum_alliance/redmine/issue_relation_extensions'
 require_dependency 'scrum_alliance/redmine/issue_status_extensions'
