@@ -75,3 +75,6 @@ input#issue_subject { font-size: 200%; width: 90%; }
 .contextual { font-size: 11px; font-family:verdana; }
 
 hr { background:#eee none repeat scroll 0% 0%; }
+
+/* =scrum_alliance */
+#main-menu li a.burndown { margin-right: 10px; }
