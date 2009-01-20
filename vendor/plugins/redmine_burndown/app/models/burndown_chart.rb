@@ -16,17 +16,14 @@ class BurndownChart
       :size => '750x400', 
       :data => data,
       :axis_with_labels => 'x,y',
-      :axis_labels => [dates.map {|d| d.strftime("%m-%d") }.join("|"), hours_left_labels],
+      :axis_labels => [dates.map {|d| d.strftime("%m-%d") }],
+      :custom => "chxr=1,0,#{sprint_data.max}",
       :line_colors => "DDDDDD,FF0000"
     )
   end
   
   def data
     [ideal_data, sprint_data]
-  end
-  
-  def hours_left_labels
-    (0..sprint_data.max).step(5) << (sprint_data.max + 5)
   end
   
   def sprint_data
