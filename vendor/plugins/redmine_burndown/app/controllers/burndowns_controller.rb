@@ -10,8 +10,8 @@ class BurndownsController < ApplicationController
 
 private
   def find_version_and_project
-    @project = Project.find(params[:id])
-    @version = @project.current_version
+    @project = Project.find(params[:project_id])
+    @version = params[:id] ? @project.versions.find(params[:id]) : @project.current_version
     render_error("There is no current Sprint for this Project") and return unless @version
   end
 end
