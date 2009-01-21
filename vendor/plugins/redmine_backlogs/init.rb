@@ -16,7 +16,7 @@ Redmine::Plugin.register :redmine_backlog do
   name 'Redmine Backlogs plugin'
   author 'Dan Hodos'
   description "Adds 'Sprint Backlog' and 'Product Backlog' tabs"
-  version '0.0.1'
+  version '1.0.0'
   
   project_module :sprint_backlogs do
     permission :sprint_backlog, {:backlogs => [:sprint]}, :public => true
