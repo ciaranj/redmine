@@ -21,7 +21,7 @@ class BacklogsController < ApplicationController
       :fields => [:status_id, :fixed_version_id], 
       :operators => {:status_id => '*', :fixed_version_id => '='}, 
       :values => {:status_id => [1], :fixed_version_id => [@current_sprint.id]},
-      :column_names => [:tracker, story_points_name, :priority, :subject, :assigned_to, :status, :estimated_hours, :done_ratio].compact}
+      :column_names => [:tracker, :category, :priority, :subject, :assigned_to, :status, :estimated_hours, :done_ratio].compact}
     @backlog_url = url_for(backlog_url_opts)
     @only_open_backlog_url = url_for(backlog_url_opts.merge(:operators => {:status_id => 'o', :fixed_version_id => '='}))
     
