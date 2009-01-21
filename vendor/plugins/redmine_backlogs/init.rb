@@ -2,9 +2,13 @@ require 'redmine'
 
 require_dependency 'backlog_listener'
 require_dependency 'scrum_alliance/redmine/rank_extension'
+require_dependency 'scrum_alliance/redmine/story_point_extension'
+require_dependency 'scrum_alliance/redmine/closing_out_extension'
 
 require 'dispatcher'
 Dispatcher.to_prepare do
+  Issue.class_eval { include ScrumAlliance::Redmine::ClosingOutExtension }
+  
   Issue.class_eval { include ScrumAlliance::Redmine::RankExtension }
   Query.available_columns << QueryColumn.new(:rank, :sortable => "#{Issue.table_name}.rank")
   
@@ -16,7 +20,7 @@ Redmine::Plugin.register :redmine_backlog do
   name 'Redmine Backlogs plugin'
   author 'Dan Hodos'
   description "Adds 'Sprint Backlog' and 'Product Backlog' tabs"
-  version '1.0.0'
+  version '1.1.0'
   
   project_module :sprint_backlogs do
     permission :sprint_backlog, {:backlogs => [:sprint]}, :public => true
