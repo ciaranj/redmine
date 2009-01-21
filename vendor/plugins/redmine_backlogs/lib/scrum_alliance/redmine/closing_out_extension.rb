@@ -1,5 +1,3 @@
-require 'ruby-debug'
-
 module ScrumAlliance
   module Redmine
     module ClosingOutExtension
