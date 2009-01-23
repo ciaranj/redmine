@@ -13,10 +13,17 @@
     <% @issue = issue -%>
     <%= error_messages_for(:issue) %>
   
-    <p><%= ff.label :subject %>
-    <%= ff.text_field :subject, :class => 'subject' %>
-    <%= ff.label :estimate %>
-    <%= ff.text_field :estimated_hours %></p>
+    <p>
+      <%= ff.label :subject %>
+      <%= ff.text_field :subject, :class => 'subject' %>
+
+      <%= ff.label :estimate %>
+      <%= ff.text_field :estimated_hours, :class => 'estimated_hours' %>
+
+      <%= ff.label :category %>
+      <%= ff.select :category_id, @project.issue_categories.map {|category| [category.name, category.id] }, :include_blank => true %>
+    </p>
+
     <p class="description"><%= ff.text_area :description %></p>
   <% end -%>
 </fieldset>
