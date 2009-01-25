@@ -1,0 +1,3 @@
+[submodule "vendor/plugins/redmine_burndown"]
+	path = vendor/plugins/redmine_burndown
+	url = git@github.com:scrumalliance/redmine_burndown.git
