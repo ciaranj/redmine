@@ -3,6 +3,7 @@ default_run_options[:pty] = true
 set :application, "redmine"
 set :repository,  "git@github.com:scrumalliance/redmine.git"
 set :scm, 'git'
+set :git_enable_submodules, 1
 
 set :deploy_to, "/home/sa_deploy/#{application}"
 set :branch, "master"
