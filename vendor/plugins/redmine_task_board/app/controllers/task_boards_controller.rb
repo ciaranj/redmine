@@ -6,8 +6,10 @@ class TaskBoardsController < ApplicationController
   
   def show
     @statuses = IssueStatus.all(:order => "position asc")
+
+    fixed_issues = @version.fixed_issues
+    @stories_with_tasks = (Issue.instance_methods.include?("story")) ? fixed_issues.group_by(&:story) : { nil => fixed_issues }
     
-    @stories_with_tasks = @version.fixed_issues.group_by(&:story)
     if @stories_with_tasks[nil]
       @stories_with_tasks[nil] = @stories_with_tasks[nil].reject {|issue| @stories_with_tasks.keys.include?(issue) }
     end
@@ -22,13 +24,15 @@ class TaskBoardsController < ApplicationController
     
     @issue = Issue.find(params[:id])
     @issue.init_journal(User.current, "Automated status change from the Task Board")
+
     attrs = {:status_id => @status.id}
     attrs.merge!(:assigned_to_id => User.current.id) unless @issue.assigned_to_id?
     @issue.update_attributes(attrs)
     
     render :update do |page|
       page.remove dom_id(@issue)
-      page.insert_html :bottom, task_board_dom_id(@issue.story, @status, "list"), :partial => "issue", :object => @issue
+      story = @issue.story if @issue.respond_to?(:story)
+      page.insert_html :bottom, task_board_dom_id(story, @status, "list"), :partial => "issue", :object => @issue
     end
   end
   
