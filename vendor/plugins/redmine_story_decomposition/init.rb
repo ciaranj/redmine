@@ -1,11 +1,12 @@
 require 'redmine'
 
-
+require_dependency 'scrum_alliance/redmine/story_task_extensions'
 require_dependency 'scrum_alliance/redmine/version_moving_extension'
 
 require 'dispatcher'
 Dispatcher.to_prepare do
   Issue.class_eval { include ScrumAlliance::Redmine::VersionMovingExtension }
+  Issue.class_eval { include ScrumAlliance::Redmine::StoryTaskExtensions }
 end
 
 Redmine::Plugin.register :redmine_story_decomposition do

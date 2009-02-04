@@ -1,6 +1,6 @@
 module ScrumAlliance
   module Redmine
-    module IssueExtensions
+    module StoryTaskExtensions
       def story?
         'story' == tracker.name.downcase
       end
