@@ -68,7 +68,11 @@ class IssuesController < ApplicationController
         format.html do
           unless @query.group.blank?
             @issues = @issues.group_by {|issue| issue.send(@query.group) }
-            @issues[nil] = @issues[nil].reject(&:story?) if 'story' == @query.group && @issues[nil]
+            if 'story' == @query.group && @issues[nil] then              
+              @issues[nil].reject! do | item |
+                item.story? &&  @issues[item]
+              end 
+            end
             @issues.delete(nil) if @issues[nil].blank?
           end
           
