@@ -1,0 +1,9 @@
+[submodule "vendor/plugins/redmine_burndown"]
+	path = vendor/plugins/redmine_burndown
+	url = git://github.com/ciaranj/redmine_burndown.git
+[submodule "vendor/plugins/redmine_task_board"]
+	path = vendor/plugins/redmine_task_board
+	url = git://github.com/ciaranj/redmine_task_board
+[submodule "vendor/plugins/flotilla"]
+	path = vendor/plugins/flotilla
+	url = git://github.com/ciaranj/flotilla
