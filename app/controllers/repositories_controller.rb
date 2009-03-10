@@ -172,8 +172,28 @@ class RepositoriesController < ApplicationController
       end
     end
   end
-  
+
+  class Stat 
+    attr_accessor :month, :value
+    def initialize(month, value) 
+      self.month= month
+      self.value= value
+    end
+  end
+
   def stats  
+
+    fields, commits_by_month, changes_by_month= _rawdata_commits_per_month(@repository)
+    @commits_per_month = []
+    @changes_per_month = []
+    
+    for i in (1..commits_by_month.length)
+      @commits_per_month << Stat.new( i, commits_by_month[i])
+      @changes_per_month << Stat.new( i, changes_by_month[i])
+    end
+    @fields ||= fields.inject([]) do |array, field|
+      array << [fields.indexof(field)+1,field]
+    end
   end
   
   def graph
@@ -226,20 +246,9 @@ private
   end
   
   def graph_commits_per_month(repository)
-    @date_to = Date.today
-    @date_from = @date_to << 11
-    @date_from = Date.civil(@date_from.year, @date_from.month, 1)
-    commits_by_day = repository.changesets.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
-    commits_by_month = [0] * 12
-    commits_by_day.each {|c| commits_by_month[c.first.to_date.months_ago] += c.last }
 
-    changes_by_day = repository.changes.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
-    changes_by_month = [0] * 12
-    changes_by_day.each {|c| changes_by_month[c.first.to_date.months_ago] += c.last }
-   
-    fields = []
-    month_names = l(:actionview_datehelper_select_month_names_abbr).split(',')
-    12.times {|m| fields << month_names[((Date.today.month - 1 - m) % 12)]}
+  
+    fields, commits_by_month, changes_by_month= _rawdata_commits_per_month(repository)
   
     graph = SVG::Graph::Bar.new(
       :height => 300,
@@ -264,6 +273,25 @@ private
     )
     
     graph.burn
+  end
+  
+  def _rawdata_commits_per_month(repository)
+    @date_to = Date.today
+    @date_from = @date_to << 11
+    @date_from = Date.civil(@date_from.year, @date_from.month, 1)
+    commits_by_day = repository.changesets.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
+    commits_by_month = [0] * 12
+    commits_by_day.each {|c| commits_by_month[c.first.to_date.months_ago] += c.last }
+
+    changes_by_day = repository.changes.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
+    changes_by_month = [0] * 12
+    changes_by_day.each {|c| changes_by_month[c.first.to_date.months_ago] += c.last }
+   
+    fields = []
+    month_names = l(:actionview_datehelper_select_month_names_abbr).split(',')
+    12.times {|m| fields << month_names[((Date.today.month - 1 - m) % 12)]}
+    
+    return fields, commits_by_month, changes_by_month
   end
 
   def graph_commits_per_author(repository)

@@ -1,4 +1,11 @@
 <h2><%= l(:label_statistics) %></h2>
+<p><div id='flot_commits_per_month' style='width:800px;height:300px'/>
+<%= chart("flot_commits_per_month", {		"Revisions"=> {:collection => @commits_per_month,:x=>:month, :y=>:value},
+						  					"Changes"=> {:collection => @changes_per_month,:x=>:month, :y=>:value}
+						  }, 
+						  {"xaxis"=>{:mode=>nil,:ticks=>@fields},
+						 	:bars=>{:show=>true, :barWidth=>0.45}} ) %>
+
 
 <p>
 <%= tag("embed", :width => 800, :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'repositories', :action => 'graph', :id => @project, :graph => "commits_per_month")) %>
