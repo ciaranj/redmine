@@ -7,3 +7,6 @@
 [submodule "vendor/plugins/flotilla"]
 	path = vendor/plugins/flotilla
 	url = git://github.com/ciaranj/flotilla
+[submodule "vendor/plugins/protovisonrails"]
+	path = vendor/plugins/protovisonrails
+	url = git://github.com/ciaranj/protovisonrails.git
