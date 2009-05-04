@@ -25,7 +25,7 @@ class Repository < ActiveRecord::Base
   before_destroy :clear_changesets
   
   # Checks if the SCM is enabled when creating a repository
-  validate_on_create { |r| r.errors.add(:type, :activerecord_error_invalid) unless Setting.enabled_scm.include?(r.class.name.demodulize) }
+  validate_on_create { |r| r.errors.add(:type, :invalid) unless Setting.enabled_scm.include?(r.class.name.demodulize) }
   
   # Removes leading and trailing whitespace
   def url=(arg)
@@ -76,11 +76,12 @@ class Repository < ActiveRecord::Base
   end
   
   # Default behaviour: we search in cached changesets
-  def changesets_for_path(path)
+  def changesets_for_path(path, options={})
     path = "/#{path}" unless path.starts_with?('/')
     Change.find(:all, :include => {:changeset => :user}, 
-      :conditions => ["repository_id = ? AND path = ?", id, path],
-      :order => "committed_on DESC, #{Changeset.table_name}.id DESC").collect(&:changeset)
+                      :conditions => ["repository_id = ? AND path = ?", id, path],
+                      :order => "committed_on DESC, #{Changeset.table_name}.id DESC",
+                      :limit => options[:limit]).collect(&:changeset)
   end
   
   # Returns a path relative to the url of the repository

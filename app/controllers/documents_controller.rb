@@ -48,13 +48,12 @@ class DocumentsController < ApplicationController
     if request.post? and @document.save	
       attach_files(@document, params[:attachments])
       flash[:notice] = l(:notice_successful_create)
-      Mailer.deliver_document_added(@document) if Setting.notified_events.include?('document_added')
       redirect_to :action => 'index', :project_id => @project
     end
   end
   
   def edit
-    @categories = Enumeration::get_values('DCAT')
+    @categories = Enumeration.document_categories
     if request.post? and @document.update_attributes(params[:document])
       flash[:notice] = l(:notice_successful_update)
       redirect_to :action => 'show', :id => @document

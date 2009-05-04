@@ -40,7 +40,7 @@ task :migrate_from_mantis => :environment do
                         90 => closed_status    # closed
                         }
                         
-      priorities = Enumeration.get_values('IPRI')
+      priorities = Enumeration.priorities
       DEFAULT_PRIORITY = priorities[2]
       PRIORITY_MAPPING = {10 => priorities[1], # none
                           20 => priorities[1], # low
@@ -195,8 +195,13 @@ task :migrate_from_mantis => :environment do
         file_type
       end
       
-      def read
-        content
+      def read(*args)
+      	if @read_finished
+      		nil
+      	else
+      		@read_finished = true
+      		content
+      	end
       end
     end
     
@@ -498,6 +503,9 @@ task :migrate_from_mantis => :environment do
   
   # Make sure bugs can refer bugs in other projects
   Setting.cross_project_issue_relations = 1 if Setting.respond_to? 'cross_project_issue_relations'
+  
+  # Turn off email notifications
+  Setting.notified_events = []
   
   MantisMigrate.establish_connection db_params
   MantisMigrate.migrate

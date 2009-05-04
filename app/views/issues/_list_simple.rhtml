@@ -1,37 +1,37 @@
 <% if issues && issues.any? %>
-  <% form_tag({}) do %>
-    <table class="list issues">
-      <thead>
-        <tr>
-          <th><%=l(:field_project)%></th>
-          <th><%=l(:field_tracker)%></th>
-          <th><%=l(:field_subject)%></th>
-          <th><%=l(:field_done_ratio)%></th>
-          <th><%=l(:field_status)%></th>
-          <th><%=l(:field_updated_on)%></th>
-        </tr>
-      </thead>
-      <tbody>  
-        <% for issue in issues %>
-          <tr id="issue-<%= issue.id %>" class="hascontextmenu <%= cycle('odd', 'even') %> <%= css_issue_classes(issue) %>">
-            <td><%=h issue.project.name %></td>
-            <td class="id">
-              <%= check_box_tag("ids[]", issue.id, false, :style => 'display:none;') %>
-              <%= link_to_issue(issue) %>
-            </td>
-            <td class="subject">
-              <%= link_to h(issue.subject), :controller => 'issues', :action => 'show', :id => issue %>
-            </td>
-            <td class="progress">
-              <%= progress_bar issue.done_ratio, :width => '100px', :legend => "#{issue.done_ratio}%" %>
-            </td>
-            <td><%= issue.status.name %></td>
-            <td><%= format_time(issue.updated_on) %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% end %>
+<% form_tag({}) do %>
+	<table class="list issues">		
+		<thead><tr>
+		<th>#</th>
+		<th><%=l(:field_project)%></th>
+		<th><%=l(:field_tracker)%></th>
+		<th><%=l(:field_subject)%></th>
+          	<th><%=l(:field_done_ratio)%></th>
+          	<th><%=l(:field_status)%></th>
+          	<th><%=l(:field_updated_on)%></th>
+		</tr></thead>
+		<tbody>	
+		<% for issue in issues %>
+		<tr id="issue-<%= issue.id %>" class="hascontextmenu <%= cycle('odd', 'even') %> <%= issue.css_classes %>">
+			<td class="id">
+			  <%= check_box_tag("ids[]", issue.id, false, :style => 'display:none;') %>
+				<%= link_to issue.id, :controller => 'issues', :action => 'show', :id => issue %>
+			</td>
+			<td class="project"><%=h issue.project %></td>
+			<td class="tracker"><%=h issue.tracker %></td>
+			<td class="subject">
+        <%= link_to h(truncate(issue.subject, :length => 60)), :controller => 'issues', :action => 'show', :id => issue %> (<%=h issue.status %>)
+      </td>
+            		<td class="progress">
+              			<%= progress_bar issue.done_ratio, :width => '100px', :legend => "#{issue.done_ratio}%" %>
+            		</td>
+            		<td><%= issue.status.name %></td>
+            		<td><%= format_time(issue.updated_on) %></td>
+		</tr>
+		<% end %>
+		</tbody>
+	</table>
+<% end %>
 <% else %>
   <p class="nodata"><%= l(:label_no_data) %></p>
 <% end %>

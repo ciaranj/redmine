@@ -62,7 +62,6 @@ class User < ActiveRecord::Base
   validates_length_of :firstname, :lastname, :maximum => 30
   validates_format_of :mail, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
   validates_length_of :mail, :maximum => 60, :allow_nil => true
-  validates_length_of :password, :minimum => 4, :allow_nil => true
   validates_confirmation_of :password, :allow_nil => true
 
   def before_create
@@ -78,6 +77,19 @@ class User < ActiveRecord::Base
   def reload(*args)
     @name = nil
     super
+  end
+  
+  def identity_url=(url)
+    if url.blank?
+      write_attribute(:identity_url, '')
+    else
+      begin
+        write_attribute(:identity_url, OpenIdAuthentication.normalize_identifier(url))
+      rescue OpenIdAuthentication::InvalidOpenId
+        # Invlaid url, don't save
+      end
+    end
+    self.read_attribute(:identity_url)
   end
   
   # Returns the user that matches provided login and password, or nil
@@ -113,6 +125,15 @@ class User < ActiveRecord::Base
   rescue => text
     raise text
   end
+  
+  # Returns the user who matches the given autologin +key+ or nil
+  def self.try_to_autologin(key)
+    token = Token.find_by_action_and_value('autologin', key)
+    if token && (token.created_on > Setting.autologin.to_i.day.ago) && token.user && token.user.active?
+      token.user.update_attribute(:last_login_on, Time.now)
+      token.user
+    end
+  end
 	
   # Return user's full name for display
   def name(formatter = nil)
@@ -137,6 +158,18 @@ class User < ActiveRecord::Base
 
   def check_password?(clear_password)
     User.hash_password(clear_password) == self.hashed_password
+  end
+
+  # Generate and set a random password.  Useful for automated user creation
+  # Based on Token#generate_token_value
+  #
+  def random_password
+    chars = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
+    password = ''
+    40.times { |i| password << chars[rand(chars.size-1)] }
+    self.password = password
+    self.password_confirmation = password
+    self
   end
   
   def pref
@@ -172,11 +205,6 @@ class User < ActiveRecord::Base
   def self.find_by_rss_key(key)
     token = Token.find_by_value(key)
     token && token.user.active? ? token.user : nil
-  end
-  
-  def self.find_by_autologin_key(key)
-    token = Token.find_by_action_and_value('autologin', key)
-    token && (token.created_on > Setting.autologin.to_i.day.ago) && token.user.active? ? token.user : nil
   end
   
   # Makes find_by_mail case-insensitive
@@ -257,6 +285,8 @@ class User < ActiveRecord::Base
     @current_user ||= User.anonymous
   end
   
+  # Returns the anonymous user.  If the anonymous user does not exist, it is created.  There can be only
+  # one anonymous user per database.
   def self.anonymous
     anonymous_user = AnonymousUser.find(:first)
     if anonymous_user.nil?
@@ -266,7 +296,17 @@ class User < ActiveRecord::Base
     anonymous_user
   end
   
-private
+  protected
+  
+  def validate
+    # Password length validation based on setting
+    if !password.nil? && password.size < Setting.password_min_length.to_i
+      errors.add(:password, :too_short, :count => Setting.password_min_length.to_i)
+    end
+  end
+  
+  private
+  
   # Return password digest
   def self.hash_password(clear_password)
     Digest::SHA1.hexdigest(clear_password || "")

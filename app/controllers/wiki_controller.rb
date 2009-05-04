@@ -45,11 +45,11 @@ class WikiController < ApplicationController
       return
     end
     @content = @page.content_for_version(params[:version])
-    if params[:export] == 'html'
+    if params[:format] == 'html'
       export = render_to_string :action => 'export', :layout => false
       send_data(export, :type => 'text/html', :filename => "#{@page.title}.html")
       return
-    elsif params[:export] == 'txt'
+    elsif params[:format] == 'txt'
       send_data(@content.text, :type => 'text/plain', :filename => "#{@page.title}.txt")
       return
     end
@@ -131,9 +131,31 @@ class WikiController < ApplicationController
     render_404 unless @annotate
   end
   
-  # remove a wiki page and its history
+  # Removes a wiki page and its history
+  # Children can be either set as root pages, removed or reassigned to another parent page
   def destroy
     return render_403 unless editable?
+    
+    @descendants_count = @page.descendants.size
+    if @descendants_count > 0
+      case params[:todo]
+      when 'nullify'
+        # Nothing to do
+      when 'destroy'
+        # Removes all its descendants
+        @page.descendants.each(&:destroy)
+      when 'reassign'
+        # Reassign children to another parent page
+        reassign_to = @wiki.pages.find_by_id(params[:reassign_to_id].to_i)
+        return unless reassign_to
+        @page.children.each do |child|
+          child.update_attribute(:parent, reassign_to)
+        end
+      else
+        @reassignable_to = @wiki.pages - @page.self_and_descendants
+        return
+      end
+    end
     @page.destroy
     redirect_to :action => 'special', :id => @project, :page => 'Page_index'
   end

@@ -88,7 +88,7 @@ class RepositoriesController < ApplicationController
   def changes
     @entry = @repository.entry(@path, @rev)
     show_error_not_found and return unless @entry
-    @changesets = @repository.changesets_for_path(@path)
+    @changesets = @repository.changesets_for_path(@path, :limit => Setting.repository_log_display_limit.to_i)
     @properties = @repository.properties(@path, @rev)
   end
   
@@ -100,7 +100,7 @@ class RepositoriesController < ApplicationController
     @changesets = @repository.changesets.find(:all,
 						:limit  =>  @changeset_pages.items_per_page,
 						:offset =>  @changeset_pages.current.offset,
-            :include => :user)
+            :include => [:user, :repository])
 
     respond_to do |format|
       format.html { render :layout => false if request.xhr? }
@@ -117,8 +117,8 @@ class RepositoriesController < ApplicationController
     
     @content = @repository.cat(@path, @rev)
     show_error_not_found and return unless @content
-    if 'raw' == params[:format] || @content.is_binary_data?
-      # Force the download if it's a binary file
+    if 'raw' == params[:format] || @content.is_binary_data? || (@entry.size && @entry.size > Setting.file_max_size_displayed.to_i.kilobyte)
+      # Force the download
       send_data @content, :filename => @path.split('/').last
     else
       # Prevent empty lines when displaying a file with Windows style eol
@@ -247,8 +247,12 @@ private
   
   def graph_commits_per_month(repository)
 
-  
-    fields, commits_by_month, changes_by_month= _rawdata_commits_per_month(repository)
+    changes_by_day = repository.changes.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
+    changes_by_month = [0] * 12
+    changes_by_day.each {|c| changes_by_month[c.first.to_date.months_ago] += c.last }
+   
+    fields = []
+    12.times {|m| fields << month_name(((Date.today.month - 1 - m) % 12) + 1)}
   
     graph = SVG::Graph::Bar.new(
       :height => 300,
@@ -275,25 +279,6 @@ private
     graph.burn
   end
   
-  def _rawdata_commits_per_month(repository)
-    @date_to = Date.today
-    @date_from = @date_to << 11
-    @date_from = Date.civil(@date_from.year, @date_from.month, 1)
-    commits_by_day = repository.changesets.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
-    commits_by_month = [0] * 12
-    commits_by_day.each {|c| commits_by_month[c.first.to_date.months_ago] += c.last }
-
-    changes_by_day = repository.changes.count(:all, :group => :commit_date, :conditions => ["commit_date BETWEEN ? AND ?", @date_from, @date_to])
-    changes_by_month = [0] * 12
-    changes_by_day.each {|c| changes_by_month[c.first.to_date.months_ago] += c.last }
-   
-    fields = []
-    month_names = l(:actionview_datehelper_select_month_names_abbr).split(',')
-    12.times {|m| fields << month_names[((Date.today.month - 1 - m) % 12)]}
-    
-    return fields, commits_by_month, changes_by_month
-  end
-
   def graph_commits_per_author(repository)
     commits_by_author = repository.changesets.count(:all, :group => :committer)
     commits_by_author.sort! {|x, y| x.last <=> y.last}

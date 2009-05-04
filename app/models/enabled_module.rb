@@ -1,5 +1,5 @@
-# redMine - project management software
-# Copyright (C) 2006-2007  Jean-Philippe Lang
+# Redmine - project management software
+# Copyright (C) 2006-2009  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,4 +20,19 @@ class EnabledModule < ActiveRecord::Base
   
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => :project_id
+  
+  after_create :module_enabled
+  
+  private
+  
+  # after_create callback used to do things when a module is enabled
+  def module_enabled
+    case name
+    when 'wiki'
+      # Create a wiki with a default start page
+      if project && project.wiki.nil?
+        Wiki.create(:project => project, :start_page => 'Wiki')
+      end
+    end
+  end
 end

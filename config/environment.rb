@@ -5,7 +5,7 @@
 # ENV['RAILS_ENV'] ||= 'production'
 
 # Specifies gem version of Rails to use when vendor/rails is not present
-RAILS_GEM_VERSION = '2.1.2' unless defined? RAILS_GEM_VERSION
+RAILS_GEM_VERSION = '2.2.2' unless defined? RAILS_GEM_VERSION
 
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
@@ -30,18 +30,13 @@ Rails::Initializer.run do |config|
   # (by default production uses :info, the others :debug)
   # config.log_level = :debug
 
-  # Use the database for sessions instead of the file system
-  # (create the session table with 'rake db:sessions:create')
-  # config.action_controller.session_store = :active_record_store
-  config.action_controller.session_store = :PStore
-
   # Enable page/fragment caching by setting a file-based store
   # (remember to create the caching directory and make it readable to the application)
   # config.action_controller.fragment_cache_store = :file_store, "#{RAILS_ROOT}/cache"
   
   # Activate observers that should always be running
   # config.active_record.observers = :cacher, :garbage_collector
-  config.active_record.observers = :message_observer
+  config.active_record.observers = :message_observer, :issue_observer, :journal_observer, :news_observer, :document_observer
 
   # Make Active Record use UTC-base instead of local time
   # config.active_record.default_timezone = :utc

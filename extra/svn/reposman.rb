@@ -26,6 +26,7 @@
 #                             allow user to browse the repository within
 #                             Redmine even for private project. If you want to share repositories
 #                             through Redmine.pm, you need to use the apache owner.
+#   -g, --group=GROUP         group of the repository. (default: root)
 #   --scm=SCM                 the kind of SCM repository you want to create (and register) in
 #                             Redmine (default: Subversion). reposman is able to create Git 
 #                             and Subversion repositories. For all other kind (Bazaar,
@@ -57,17 +58,17 @@
 
 require 'getoptlong'
 require 'rdoc/usage'
-require 'soap/wsdlDriver'
 require 'find'
 require 'etc'
 
-Version = "1.1"
+Version = "1.3"
 SUPPORTED_SCM = %w( Subversion Darcs Mercurial Bazaar Git Filesystem )
 
 opts = GetoptLong.new(
                       ['--svn-dir',      '-s', GetoptLong::REQUIRED_ARGUMENT],
                       ['--redmine-host', '-r', GetoptLong::REQUIRED_ARGUMENT],
                       ['--owner',        '-o', GetoptLong::REQUIRED_ARGUMENT],
+                      ['--group',        '-g', GetoptLong::REQUIRED_ARGUMENT],
                       ['--url',          '-u', GetoptLong::REQUIRED_ARGUMENT],
                       ['--command' ,     '-c', GetoptLong::REQUIRED_ARGUMENT],
                       ['--scm',                GetoptLong::REQUIRED_ARGUMENT],
@@ -84,6 +85,7 @@ $quiet        = false
 $redmine_host = ''
 $repos_base   = ''
 $svn_owner    = 'root'
+$svn_group    = 'root'
 $use_groupid  = true
 $svn_url      = false
 $test         = false
@@ -126,6 +128,7 @@ begin
     when '--svn-dir';        $repos_base   = arg.dup
     when '--redmine-host';   $redmine_host = arg.dup
     when '--owner';          $svn_owner    = arg.dup; $use_groupid = false;
+    when '--group';          $svn_group    = arg.dup; $use_groupid = false;
     when '--url';            $svn_url      = arg.dup
     when '--scm';            $scm          = arg.dup.capitalize; log("Invalid SCM: #{$scm}", :exit => true) unless SUPPORTED_SCM.include?($scm)
     when '--command';        $command =      arg.dup
@@ -164,20 +167,27 @@ unless File.directory?($repos_base)
   log("directory '#{$repos_base}' doesn't exists", :exit => true)
 end
 
+begin
+  require 'activeresource'
+rescue LoadError
+  log("This script requires activeresource.\nRun 'gem install activeresource' to install it.", :exit => true)
+end
+
+class Project < ActiveResource::Base; end
+
 log("querying Redmine for projects...", :level => 1);
 
 $redmine_host.gsub!(/^/, "http://") unless $redmine_host.match("^https?://")
 $redmine_host.gsub!(/\/$/, '')
 
-wsdl_url = "#{$redmine_host}/sys/service.wsdl";
+Project.site = "#{$redmine_host}/sys";
 
 begin
-  soap = SOAP::WSDLDriverFactory.new(wsdl_url).create_rpc_driver
+  # Get all active projects that have the Repository module enabled
+  projects = Project.find(:all)
 rescue => e
-  log("Unable to connect to #{wsdl_url} : #{e}", :exit => true)
+  log("Unable to connect to #{Project.site}: #{e}", :exit => true)
 end
-
-projects = soap.ProjectsWithRepositoryEnabled
 
 if projects.nil?
   log('no project found, perhaps you forgot to "Enable WS for repository management"', :exit => true)
@@ -189,7 +199,7 @@ def set_owner_and_rights(project, repos_path, &block)
   if RUBY_PLATFORM =~ /mswin/
     yield if block_given?
   else
-    uid, gid = Etc.getpwnam($svn_owner).uid, ($use_groupid ? Etc.getgrnam(project.identifier).gid : 0)
+    uid, gid = Etc.getpwnam($svn_owner).uid, ($use_groupid ? Etc.getgrnam(project.identifier).gid : Etc.getgrnam($svn_group).gid)
     right = project.is_public ? 0775 : 0770
     yield if block_given?
     Find.find(repos_path) do |f|
@@ -247,7 +257,7 @@ projects.each do |project|
   else
     # if repository is already declared in redmine, we don't create
     # unless user use -f with reposman
-    if $force == false and not project.repository.nil?
+    if $force == false and project.respond_to?(:repository)
       log("\trepository for project #{project.identifier} already exists in Redmine", :level => 1)
       next
     end
@@ -274,11 +284,11 @@ projects.each do |project|
     end
 
     if $svn_url
-      ret = soap.RepositoryCreated project.identifier, $scm, "#{$svn_url}#{project.identifier}"
-      if ret > 0
+      begin
+        project.post(:repository, :vendor => $scm, :repository => {:url => "#{$svn_url}#{project.identifier}"})
         log("\trepository #{repos_path} registered in Redmine with url #{$svn_url}#{project.identifier}");
-      else
-        log("\trepository #{repos_path} not registered in Redmine. Look in your log to find why.");
+      rescue => e
+        log("\trepository #{repos_path} not registered in Redmine: #{e.message}");
       end
     end
 

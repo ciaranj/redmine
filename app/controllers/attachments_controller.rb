@@ -17,7 +17,7 @@
 
 class AttachmentsController < ApplicationController
   before_filter :find_project
-  before_filter :read_authorize, :except => :destroy
+  before_filter :file_readable, :read_authorize, :except => :destroy
   before_filter :delete_authorize, :only => :destroy
   
   verify :method => :post, :only => :destroy
@@ -26,10 +26,10 @@ class AttachmentsController < ApplicationController
     if @attachment.is_diff?
       @diff = File.new(@attachment.diskfile, "rb").read
       render :action => 'diff'
-    elsif @attachment.is_text?
+    elsif @attachment.is_text? && @attachment.filesize <= Setting.file_max_size_displayed.to_i.kilobyte
       @content = File.new(@attachment.diskfile, "rb").read
       render :action => 'file'
-    elsif
+    else
       download
     end
   end
@@ -62,6 +62,11 @@ private
     @project = @attachment.project
   rescue ActiveRecord::RecordNotFound
     render_404
+  end
+  
+  # Checks that the file exists and is readable
+  def file_readable
+    @attachment.readable? ? true : render_404
   end
   
   def read_authorize

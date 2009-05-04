@@ -51,7 +51,7 @@ class WelcomeControllerTest < Test::Unit::TestCase
     Setting.default_language = 'en'
     @request.env['HTTP_ACCEPT_LANGUAGE'] = 'zh-TW'
     get :index
-    assert_equal :"zh-tw", @controller.current_language
+    assert_equal :"zh-TW", @controller.current_language
   end
   
   def test_browser_language_alternate_not_valid
@@ -59,5 +59,12 @@ class WelcomeControllerTest < Test::Unit::TestCase
     @request.env['HTTP_ACCEPT_LANGUAGE'] = 'fr-CA'
     get :index
     assert_equal :fr, @controller.current_language
+  end
+  
+  def test_robots
+    get :robots
+    assert_response :success
+    assert_equal 'text/plain', @response.content_type
+    assert @response.body.match(%r{^Disallow: /projects/ecookbook/issues$})
   end
 end

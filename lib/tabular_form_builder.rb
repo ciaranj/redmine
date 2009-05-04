@@ -18,7 +18,7 @@
 require 'action_view/helpers/form_helper'
 
 class TabularFormBuilder < ActionView::Helpers::FormBuilder
-  include GLoc
+  include Redmine::I18n
   
   def initialize(object_name, object, template, options, proc)
     set_language_if_valid options.delete(:lang)
@@ -41,7 +41,7 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
   # Returns a label tag for the given field
   def label_for_field(field, options = {})
       return '' if options.delete(:no_label)
-      text = l(options[:label]) if options[:label]
+      text = options[:label].is_a?(Symbol) ? l(options[:label]) : options[:label]
       text ||= l(("field_" + field.to_s.gsub(/\_id$/, "")).to_sym)
       text << @template.content_tag("span", " *", :class => "required") if options.delete(:required)
       @template.content_tag("label", text, 

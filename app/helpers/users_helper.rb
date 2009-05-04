@@ -25,21 +25,16 @@ module UsersHelper
   end
   
   # Options for the new membership projects combo-box
-  def projects_options_for_select(projects)
+  def options_for_membership_project_select(user, projects)
     options = content_tag('option', "--- #{l(:actionview_instancetag_blank_option)} ---")
-    projects_by_root = projects.group_by(&:root)
-    projects_by_root.keys.sort.each do |root|
-      options << content_tag('option', h(root.name), :value => root.id, :disabled => (!projects.include?(root)))
-      projects_by_root[root].sort.each do |project|
-        next if project == root
-        options << content_tag('option', '&#187; ' + h(project.name), :value => project.id)
-      end
+    options << project_tree_options_for_select(projects) do |p|
+      {:disabled => (user.projects.include?(p))}
     end
     options
   end
   
   def change_status_link(user)
-    url = {:action => 'edit', :id => user, :page => params[:page], :status => params[:status]}
+    url = {:controller => 'users', :action => 'edit', :id => user, :page => params[:page], :status => params[:status], :tab => nil}
     
     if user.locked?
       link_to l(:button_unlock), url.merge(:user => {:status => User::STATUS_ACTIVE}), :method => :post, :class => 'icon icon-unlock'

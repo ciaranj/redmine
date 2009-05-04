@@ -51,11 +51,23 @@ class Issue < ActiveRecord::Base
   validates_inclusion_of :done_ratio, :in => 0..100
   validates_numericality_of :estimated_hours, :allow_nil => true
 
+  named_scope :visible, lambda {|*args| { :include => :project,
+                                          :conditions => Project.allowed_to_condition(args.first || User.current, :view_issues) } }
+  
+  named_scope :open, :conditions => ["#{IssueStatus.table_name}.is_closed = ?", false], :include => :status
+  
+  after_save :create_journal
+  
+  # Returns true if usr or current user is allowed to view the issue
+  def visible?(usr=nil)
+    (usr || User.current).allowed_to?(:view_issues, self.project)
+  end
+  
   def after_initialize
     if new_record?
       # set default values for new records only
       self.status ||= IssueStatus.default
-      self.priority ||= Enumeration.default('IPRI')
+      self.priority ||= Enumeration.priorities.default
     end
   end
   
@@ -71,34 +83,43 @@ class Issue < ActiveRecord::Base
     self
   end
   
-  # Move an issue to a new project and tracker
-  def move_to(new_project, new_tracker = nil)
+  # Moves/copies an issue to a new project and tracker
+  # Returns the moved/copied issue on success, false on failure
+  def move_to(new_project, new_tracker = nil, options = {})
+    options ||= {}
+    issue = options[:copy] ? self.clone : self
     transaction do
-      if new_project && project_id != new_project.id
+      if new_project && issue.project_id != new_project.id
         # delete issue relations
         unless Setting.cross_project_issue_relations?
-          self.relations_from.clear
-          self.relations_to.clear
+          issue.relations_from.clear
+          issue.relations_to.clear
         end
         # issue is moved to another project
         # reassign to the category with same name if any
-        new_category = category.nil? ? nil : new_project.issue_categories.find_by_name(category.name)
-        self.category = new_category
-        self.fixed_version = nil
-        self.project = new_project
+        new_category = issue.category.nil? ? nil : new_project.issue_categories.find_by_name(issue.category.name)
+        issue.category = new_category
+        issue.fixed_version = nil
+        issue.project = new_project
       end
       if new_tracker
-        self.tracker = new_tracker
+        issue.tracker = new_tracker
       end
-      if save
-        # Manually update project_id on related time entries
-        TimeEntry.update_all("project_id = #{new_project.id}", {:issue_id => id})
+      if options[:copy]
+        issue.custom_field_values = self.custom_field_values.inject({}) {|h,v| h[v.custom_field_id] = v.value; h}
+        issue.status = self.status
+      end
+      if issue.save
+        unless options[:copy]
+          # Manually update project_id on related time entries
+          TimeEntry.update_all("project_id = #{new_project.id}", {:issue_id => id})
+        end
       else
-        rollback_db_transaction
+        Issue.connection.rollback_db_transaction
         return false
       end
     end
-    return true
+    return issue
   end
   
   def priority_id=(pid)
@@ -112,20 +133,20 @@ class Issue < ActiveRecord::Base
   
   def validate
     if self.due_date.nil? && @attributes['due_date'] && !@attributes['due_date'].empty?
-      errors.add :due_date, :activerecord_error_not_a_date
+      errors.add :due_date, :not_a_date
     end
     
     if self.due_date and self.start_date and self.due_date < self.start_date
-      errors.add :due_date, :activerecord_error_greater_than_start_date
+      errors.add :due_date, :greater_than_start_date
     end
     
     if start_date && soonest_start && start_date < soonest_start
-      errors.add :start_date, :activerecord_error_invalid
+      errors.add :start_date, :invalid
     end
   end
   
   def validate_on_create
-    errors.add :tracker_id, :activerecord_error_invalid unless project.trackers.include?(tracker)
+    errors.add :tracker_id, :invalid unless project.trackers.include?(tracker)
   end
   
   def before_create
@@ -133,30 +154,6 @@ class Issue < ActiveRecord::Base
     if assigned_to.nil? && category && category.assigned_to
       self.assigned_to = category.assigned_to
     end
-  end
-  
-  def before_save  
-    if @current_journal
-      # attributes changes
-      (Issue.column_names - %w(id description)).each {|c|
-        @current_journal.details << JournalDetail.new(:property => 'attr',
-                                                      :prop_key => c,
-                                                      :old_value => @issue_before_change.send(c),
-                                                      :value => send(c)) unless send(c)==@issue_before_change.send(c)
-      }
-      # custom fields changes
-      custom_values.each {|c|
-        next if (@custom_values_before_change[c.custom_field_id]==c.value ||
-                  (@custom_values_before_change[c.custom_field_id].blank? && c.value.blank?))
-        @current_journal.details << JournalDetail.new(:property => 'cf', 
-                                                      :prop_key => c.custom_field_id,
-                                                      :old_value => @custom_values_before_change[c.custom_field_id],
-                                                      :value => c.value)
-      }      
-      @current_journal.save
-    end
-    # Save the issue even if the journal is not saved (because empty)
-    true
   end
   
   def after_save
@@ -198,7 +195,7 @@ class Issue < ActiveRecord::Base
   
   # Returns true if the issue is overdue
   def overdue?
-    !due_date.nil? && (due_date < Date.today)
+    !due_date.nil? && (due_date < Date.today) && !status.is_closed?
   end
   
   # Users the issue can be assigned to
@@ -222,6 +219,11 @@ class Issue < ActiveRecord::Base
     recipients.compact.uniq
   end
   
+  # Returns the total number of hours spent on this issue.
+  #
+  # Example:
+  #   spent_hours => 0
+  #   spent_hours => 50
   def spent_hours
     @spent_hours ||= time_entries.sum(:hours) || 0
   end
@@ -250,6 +252,11 @@ class Issue < ActiveRecord::Base
     due_date || (fixed_version ? fixed_version.effective_date : nil)
   end
   
+  # Returns the time scheduled for this issue.
+  # 
+  # Example:
+  #   Start Date: 2/26/09, End Date: 3/04/09
+  #   duration => 6
   def duration
     (start_date && due_date) ? due_date - start_date : 0
   end
@@ -258,14 +265,18 @@ class Issue < ActiveRecord::Base
     @soonest_start ||= relations_to.collect{|relation| relation.successor_soonest_start}.compact.min
   end
   
-  def self.visible_by(usr)
-    with_scope(:find => { :conditions => Project.visible_by(usr) }) do
-      yield
-    end
-  end
-  
   def to_s
     "#{tracker} ##{id}: #{subject}"
+  end
+  
+  # Returns a string of css classes that apply to the issue
+  def css_classes
+    s = "issue status-#{status.position} priority-#{priority.position}"
+    s << ' closed' if closed?
+    s << ' overdue' if overdue?
+    s << ' created-by-me' if User.current.logged? && author_id == User.current.id
+    s << ' assigned-to-me' if User.current.logged? && assigned_to_id == User.current.id
+    s
   end
   
   private
@@ -277,5 +288,29 @@ class Issue < ActiveRecord::Base
                                          :prop_key => obj.id,
                                          :old_value => obj.filename)
     journal.save
+  end
+  
+  # Saves the changes in a Journal
+  # Called after_save
+  def create_journal
+    if @current_journal
+      # attributes changes
+      (Issue.column_names - %w(id description lock_version created_on updated_on)).each {|c|
+        @current_journal.details << JournalDetail.new(:property => 'attr',
+                                                      :prop_key => c,
+                                                      :old_value => @issue_before_change.send(c),
+                                                      :value => send(c)) unless send(c)==@issue_before_change.send(c)
+      }
+      # custom fields changes
+      custom_values.each {|c|
+        next if (@custom_values_before_change[c.custom_field_id]==c.value ||
+                  (@custom_values_before_change[c.custom_field_id].blank? && c.value.blank?))
+        @current_journal.details << JournalDetail.new(:property => 'cf', 
+                                                      :prop_key => c.custom_field_id,
+                                                      :old_value => @custom_values_before_change[c.custom_field_id],
+                                                      :value => c.value)
+      }      
+      @current_journal.save
+    end
   end
 end

@@ -27,14 +27,14 @@ class IssueTest < Test::Unit::TestCase
            :time_entries
 
   def test_create
-    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'test_create', :description => 'IssueTest#test_create', :estimated_hours => '1:30')
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.priorities.first, :subject => 'test_create', :description => 'IssueTest#test_create', :estimated_hours => '1:30')
     assert issue.save
     issue.reload
     assert_equal 1.5, issue.estimated_hours
   end
   
   def test_create_minimal
-    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'test_create')
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.priorities.first, :subject => 'test_create')
     assert issue.save
     assert issue.description.nil?
   end
@@ -47,20 +47,33 @@ class IssueTest < Test::Unit::TestCase
     assert issue.available_custom_fields.include?(field)
     # No value for the custom field
     assert !issue.save
-    assert_equal 'activerecord_error_invalid', issue.errors.on(:custom_values)
+    assert_equal I18n.translate('activerecord.errors.messages.invalid'), issue.errors.on(:custom_values)
     # Blank value
     issue.custom_field_values = { field.id => '' }
     assert !issue.save
-    assert_equal 'activerecord_error_invalid', issue.errors.on(:custom_values)
+    assert_equal I18n.translate('activerecord.errors.messages.invalid'), issue.errors.on(:custom_values)
     # Invalid value
     issue.custom_field_values = { field.id => 'SQLServer' }
     assert !issue.save
-    assert_equal 'activerecord_error_invalid', issue.errors.on(:custom_values)
+    assert_equal I18n.translate('activerecord.errors.messages.invalid'), issue.errors.on(:custom_values)
     # Valid value
     issue.custom_field_values = { field.id => 'PostgreSQL' }
     assert issue.save
     issue.reload
     assert_equal 'PostgreSQL', issue.custom_value_for(field).value
+  end
+  
+  def test_errors_full_messages_should_include_custom_fields_errors
+    field = IssueCustomField.find_by_name('Database')
+    
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :subject => 'test_create', :description => 'IssueTest#test_create_with_required_custom_field')
+    assert issue.available_custom_fields.include?(field)
+    # Invalid value
+    issue.custom_field_values = { field.id => 'SQLServer' }
+    
+    assert !issue.valid?
+    assert_equal 1, issue.errors.full_messages.size
+    assert_equal "Database #{I18n.translate('activerecord.errors.messages.inclusion')}", issue.errors.full_messages.first
   end
   
   def test_update_issue_with_required_custom_field
@@ -110,7 +123,7 @@ class IssueTest < Test::Unit::TestCase
   end
   
   def test_category_based_assignment
-    issue = Issue.create(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Assignment test', :description => 'Assignment test', :category_id => 1)
+    issue = Issue.create(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.priorities.first, :subject => 'Assignment test', :description => 'Assignment test', :category_id => 1)
     assert_equal IssueCategory.find(1).assigned_to, issue.assigned_to
   end
   
@@ -126,7 +139,7 @@ class IssueTest < Test::Unit::TestCase
   
   def test_should_close_duplicates
     # Create 3 issues
-    issue1 = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Duplicates test', :description => 'Duplicates test')
+    issue1 = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :priority => Enumeration.priorities.first, :subject => 'Duplicates test', :description => 'Duplicates test')
     assert issue1.save
     issue2 = issue1.clone
     assert issue2.save
@@ -153,7 +166,7 @@ class IssueTest < Test::Unit::TestCase
   
   def test_should_not_close_duplicated_issue
     # Create 3 issues
-    issue1 = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Duplicates test', :description => 'Duplicates test')
+    issue1 = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :priority => Enumeration.priorities.first, :subject => 'Duplicates test', :description => 'Duplicates test')
     assert issue1.save
     issue2 = issue1.clone
     assert issue2.save
@@ -191,6 +204,30 @@ class IssueTest < Test::Unit::TestCase
     assert_nil issue.category_id
   end
   
+  def test_copy_to_the_same_project
+    issue = Issue.find(1)
+    copy = nil
+    assert_difference 'Issue.count' do
+      copy = issue.move_to(issue.project, nil, :copy => true)
+    end
+    assert_kind_of Issue, copy
+    assert_equal issue.project, copy.project
+    assert_equal "125", copy.custom_value_for(2).value
+  end
+  
+  def test_copy_to_another_project_and_tracker
+    issue = Issue.find(1)
+    copy = nil
+    assert_difference 'Issue.count' do
+      copy = issue.move_to(Project.find(3), Tracker.find(2), :copy => true)
+    end
+    assert_kind_of Issue, copy
+    assert_equal Project.find(3), copy.project
+    assert_equal Tracker.find(2), copy.tracker
+    # Custom field #2 is not associated with target tracker
+    assert_nil copy.custom_value_for(2)
+  end
+  
   def test_issue_destroy
     Issue.find(1).destroy
     assert_nil Issue.find_by_id(1)
@@ -202,5 +239,33 @@ class IssueTest < Test::Unit::TestCase
     assert !Issue.new(:due_date => Date.today).overdue?
     assert !Issue.new(:due_date => 1.day.from_now.to_date).overdue?
     assert !Issue.new(:due_date => nil).overdue?
+    assert !Issue.new(:due_date => 1.day.ago.to_date, :status => IssueStatus.find(:first, :conditions => {:is_closed => true})).overdue?
+  end
+  
+  def test_create_should_send_email_notification
+    ActionMailer::Base.deliveries.clear
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.priorities.first, :subject => 'test_create', :estimated_hours => '1:30')
+
+    assert issue.save
+    assert_equal 1, ActionMailer::Base.deliveries.size
+  end
+  
+  def test_stale_issue_should_not_send_email_notification
+    ActionMailer::Base.deliveries.clear
+    issue = Issue.find(1)
+    stale = Issue.find(1)
+    
+    issue.init_journal(User.find(1))
+    issue.subject = 'Subjet update'
+    assert issue.save
+    assert_equal 1, ActionMailer::Base.deliveries.size
+    ActionMailer::Base.deliveries.clear
+    
+    stale.init_journal(User.find(1))
+    stale.subject = 'Another subjet update'
+    assert_raise ActiveRecord::StaleObjectError do
+      stale.save
+    end
+    assert ActionMailer::Base.deliveries.empty?
   end
 end

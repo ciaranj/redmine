@@ -33,16 +33,37 @@ class ProjectsControllerTest < Test::Unit::TestCase
     @request.session[:user_id] = nil
     Setting.default_language = 'en'
   end
-
+  
+  def test_index_routing
+    assert_routing(
+      {:method => :get, :path => '/projects'},
+      :controller => 'projects', :action => 'index'
+    )
+  end
+  
   def test_index
     get :index
     assert_response :success
     assert_template 'index'
-    assert_not_nil assigns(:project_tree)
-    # Root project as hash key
-    assert assigns(:project_tree).keys.include?(Project.find(1))
-    # Subproject in corresponding value
-    assert assigns(:project_tree)[Project.find(1)].include?(Project.find(3))
+    assert_not_nil assigns(:projects)
+    
+    assert_tag :ul, :child => {:tag => 'li',
+                               :descendant => {:tag => 'a', :content => 'eCookbook'},
+                               :child => { :tag => 'ul',
+                                           :descendant => { :tag => 'a',
+                                                            :content => 'Child of private child'
+                                                           }
+                                          }
+                               }
+                               
+    assert_no_tag :a, :content => /Private child of eCookbook/
+  end
+  
+  def test_index_atom_routing
+    assert_routing(
+      {:method => :get, :path => '/projects.atom'},
+      :controller => 'projects', :action => 'index', :format => 'atom'
+    )
   end
   
   def test_index_atom
@@ -51,6 +72,28 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert_template 'common/feed.atom.rxml'
     assert_select 'feed>title', :text => 'Redmine: Latest projects'
     assert_select 'feed>entry', :count => Project.count(:conditions => Project.visible_by(User.current))
+  end
+  
+  def test_add_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/new'},
+      :controller => 'projects', :action => 'add'
+    )
+    assert_recognizes(
+      {:controller => 'projects', :action => 'add'},
+      {:method => :post, :path => '/projects/new'}
+    )
+    assert_recognizes(
+      {:controller => 'projects', :action => 'add'},
+      {:method => :post, :path => '/projects'}
+    )
+  end
+  
+  def test_show_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/test'},
+      :controller => 'projects', :action => 'show', :id => 'test'
+    )
   end
   
   def test_show_by_id
@@ -83,6 +126,17 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert_tag :tag => 'a', :content => /Private child/
   end
   
+  def test_settings_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/4223/settings'},
+      :controller => 'projects', :action => 'settings', :id => '4223'
+    )
+    assert_routing(
+      {:method => :get, :path => '/projects/4223/settings/members'},
+      :controller => 'projects', :action => 'settings', :id => '4223', :tab => 'members'
+    )
+  end
+  
   def test_settings
     @request.session[:user_id] = 2 # manager
     get :settings, :id => 1
@@ -94,9 +148,45 @@ class ProjectsControllerTest < Test::Unit::TestCase
     @request.session[:user_id] = 2 # manager
     post :edit, :id => 1, :project => {:name => 'Test changed name',
                                        :issue_custom_field_ids => ['']}
-    assert_redirected_to 'projects/settings/ecookbook'
+    assert_redirected_to 'projects/ecookbook/settings'
     project = Project.find(1)
     assert_equal 'Test changed name', project.name
+  end
+  
+  def test_add_version_routing
+    assert_routing(
+      {:method => :get, :path => 'projects/64/versions/new'},
+      :controller => 'projects', :action => 'add_version', :id => '64'
+    )
+    assert_routing(
+    #TODO: use PUT
+      {:method => :post, :path => 'projects/64/versions/new'},
+      :controller => 'projects', :action => 'add_version', :id => '64'
+    )
+  end
+  
+  def test_add_issue_category_routing
+    assert_routing(
+      {:method => :get, :path => 'projects/test/categories/new'},
+      :controller => 'projects', :action => 'add_issue_category', :id => 'test'
+    )
+    assert_routing(
+    #TODO: use PUT and update form
+      {:method => :post, :path => 'projects/64/categories/new'},
+      :controller => 'projects', :action => 'add_issue_category', :id => '64'
+    )
+  end
+  
+  def test_destroy_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/567/destroy'},
+      :controller => 'projects', :action => 'destroy', :id => '567'
+    )
+    assert_routing(
+    #TODO: use DELETE and update form
+      {:method => :post, :path => 'projects/64/destroy'},
+      :controller => 'projects', :action => 'destroy', :id => '64'
+    )
   end
   
   def test_get_destroy
@@ -124,7 +214,7 @@ class ProjectsControllerTest < Test::Unit::TestCase
       post :add_file, :id => 1, :version_id => '',
            :attachments => {'1' => {'file' => test_uploaded_file('testfile.txt', 'text/plain')}}
     end
-    assert_redirected_to 'projects/list_files/ecookbook'
+    assert_redirected_to 'projects/ecookbook/files'
     a = Attachment.find(:first, :order => 'created_on DESC')
     assert_equal 'testfile.txt', a.filename
     assert_equal Project.find(1), a.container
@@ -133,6 +223,17 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert_kind_of TMail::Mail, mail
     assert_equal "[eCookbook] New file", mail.subject
     assert mail.body.include?('testfile.txt')
+  end
+  
+  def test_add_file_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/33/files/new'},
+      :controller => 'projects', :action => 'add_file', :id => '33'
+    )
+    assert_routing(
+      {:method => :post, :path => '/projects/33/files/new'},
+      :controller => 'projects', :action => 'add_file', :id => '33'
+    )
   end
   
   def test_add_version_file
@@ -144,7 +245,7 @@ class ProjectsControllerTest < Test::Unit::TestCase
       post :add_file, :id => 1, :version_id => '2',
            :attachments => {'1' => {'file' => test_uploaded_file('testfile.txt', 'text/plain')}}
     end
-    assert_redirected_to 'projects/list_files/ecookbook'
+    assert_redirected_to 'projects/ecookbook/files'
     a = Attachment.find(:first, :order => 'created_on DESC')
     assert_equal 'testfile.txt', a.filename
     assert_equal Version.find(2), a.container
@@ -165,11 +266,32 @@ class ProjectsControllerTest < Test::Unit::TestCase
                    :attributes => { :href => '/attachments/download/9/version_file.zip' }
   end
 
+  def test_list_files_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/33/files'},
+      :controller => 'projects', :action => 'list_files', :id => '33'
+    )
+  end
+  
+  def test_changelog_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/44/changelog'},
+      :controller => 'projects', :action => 'changelog', :id => '44'
+    )
+  end
+  
   def test_changelog
     get :changelog, :id => 1
     assert_response :success
     assert_template 'changelog'
     assert_not_nil assigns(:versions)
+  end
+  
+  def test_roadmap_routing
+    assert_routing(
+      {:method => :get, :path => 'projects/33/roadmap'},
+      :controller => 'projects', :action => 'roadmap', :id => '33'
+    )
   end
   
   def test_roadmap
@@ -193,7 +315,21 @@ class ProjectsControllerTest < Test::Unit::TestCase
     # Completed version appears
     assert assigns(:versions).include?(Version.find(1))
   end
-
+  
+  def test_project_activity_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/1/activity'},
+       :controller => 'projects', :action => 'activity', :id => '1'
+    )
+  end
+  
+  def test_project_activity_atom_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/1/activity.atom'},
+       :controller => 'projects', :action => 'activity', :id => '1', :format => 'atom'
+    )    
+  end
+  
   def test_project_activity
     get :activity, :id => 1, :with_subprojects => 0
     assert_response :success
@@ -228,6 +364,10 @@ class ProjectsControllerTest < Test::Unit::TestCase
                    }
                  }
                }
+  end
+  
+  def test_global_activity_routing
+    assert_routing({:method => :get, :path => '/activity'}, :controller => 'projects', :action => 'activity', :id => nil)
   end
   
   def test_global_activity
@@ -266,17 +406,37 @@ class ProjectsControllerTest < Test::Unit::TestCase
                }
   end
   
+  def test_global_activity_atom_routing
+    assert_routing({:method => :get, :path => '/activity.atom'}, :controller => 'projects', :action => 'activity', :id => nil, :format => 'atom')
+  end
+  
   def test_activity_atom_feed
     get :activity, :format => 'atom'
     assert_response :success
     assert_template 'common/feed.atom.rxml'
   end
   
-  def test_archive    
+  def test_archive_routing
+    assert_routing(
+    #TODO: use PUT to project path and modify form
+      {:method => :post, :path => 'projects/64/archive'},
+      :controller => 'projects', :action => 'archive', :id => '64'
+    )
+  end
+  
+  def test_archive
     @request.session[:user_id] = 1 # admin
     post :archive, :id => 1
     assert_redirected_to 'admin/projects'
     assert !Project.find(1).active?
+  end
+  
+  def test_unarchive_routing
+    assert_routing(
+    #TODO: use PUT to project path and modify form
+      {:method => :post, :path => '/projects/567/unarchive'},
+      :controller => 'projects', :action => 'unarchive', :id => '567'
+    )
   end
   
   def test_unarchive
@@ -287,6 +447,38 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert Project.find(1).active?
   end
   
+  def test_project_breadcrumbs_should_be_limited_to_3_ancestors
+    CustomField.delete_all
+    parent = nil
+    6.times do |i|
+      p = Project.create!(:name => "Breadcrumbs #{i}", :identifier => "breadcrumbs-#{i}")
+      p.set_parent!(parent)
+      get :show, :id => p
+      assert_tag :h1, :parent => { :attributes => {:id => 'header'}},
+                      :children => { :count => [i, 3].min,
+                                     :only => { :tag => 'a' } }
+                                     
+      parent = p
+    end
+  end
+
+  def test_copy_with_project
+    @request.session[:user_id] = 1 # admin
+    get :copy, :id => 1
+    assert_response :success
+    assert_template 'copy'
+    assert assigns(:project)
+    assert_equal Project.find(1).description, assigns(:project).description
+    assert_nil assigns(:project).id
+  end
+
+  def test_copy_without_project
+    @request.session[:user_id] = 1 # admin
+    get :copy
+    assert_response :redirect
+    assert_redirected_to :controller => 'admin', :action => 'projects'
+  end
+
   def test_jump_should_redirect_to_active_tab
     get :show, :id => 1, :jump => 'issues'
     assert_redirected_to 'projects/ecookbook/issues'
@@ -302,38 +494,6 @@ class ProjectsControllerTest < Test::Unit::TestCase
     get :show, :id => 3, :jump => 'foobar'
     assert_response :success
     assert_template 'show'
-  end
-  
-  def test_project_menu
-    assert_no_difference 'Redmine::MenuManager.items(:project_menu).size' do
-      Redmine::MenuManager.map :project_menu do |menu|
-        menu.push :foo, { :controller => 'projects', :action => 'show' }, :cation => 'Foo'
-        menu.push :bar, { :controller => 'projects', :action => 'show' }, :before => :activity
-        menu.push :hello, { :controller => 'projects', :action => 'show' }, :caption => Proc.new {|p| p.name.upcase }, :after => :bar
-      end
-      
-      get :show, :id => 1
-      assert_tag :div, :attributes => { :id => 'main-menu' },
-                       :descendant => { :tag => 'li', :child => { :tag => 'a', :content => 'Foo',
-                                                                               :attributes => { :class => 'foo' } } }
-  
-      assert_tag :div, :attributes => { :id => 'main-menu' },
-                       :descendant => { :tag => 'li', :child => { :tag => 'a', :content => 'Bar',
-                                                                               :attributes => { :class => 'bar' } },
-                                                      :before => { :tag => 'li', :child => { :tag => 'a', :content => 'ECOOKBOOK' } } }
-
-      assert_tag :div, :attributes => { :id => 'main-menu' },
-                       :descendant => { :tag => 'li', :child => { :tag => 'a', :content => 'ECOOKBOOK',
-                                                                               :attributes => { :class => 'hello' } },
-                                                      :before => { :tag => 'li', :child => { :tag => 'a', :content => 'Activity' } } }
-      
-      # Remove the menu items
-      Redmine::MenuManager.map :project_menu do |menu|
-        menu.delete :foo
-        menu.delete :bar
-        menu.delete :hello
-      end
-    end
   end
   
   # A hook that is manually registered later

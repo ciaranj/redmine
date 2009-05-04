@@ -64,6 +64,7 @@ class RepositoriesSubversionControllerTest < Test::Unit::TestCase
       entry = assigns(:entries).detect {|e| e.name == 'helloworld.c'}
       assert_equal 'file', entry.kind
       assert_equal 'subversion_test/helloworld.c', entry.path
+      assert_tag :a, :content => 'helloworld.c', :attributes => { :class => /text\-x\-c/ }
     end
 
     def test_browse_at_given_revision
@@ -94,6 +95,16 @@ class RepositoriesSubversionControllerTest < Test::Unit::TestCase
       assert_response :success
       assert_template 'entry'
     end
+      
+    def test_entry_should_send_if_too_big
+      # no files in the test repo is larger than 1KB...
+      with_settings :file_max_size_displayed => 0 do
+        get :entry, :id => 1, :path => ['subversion_test', 'helloworld.c']
+        assert_response :success
+        assert_template ''
+        assert_equal 'attachment; filename="helloworld.c"', @response.headers['Content-Disposition']
+      end
+    end
     
     def test_entry_at_given_revision
       get :entry, :id => 1, :path => ['subversion_test', 'helloworld.rb'], :rev => 2
@@ -113,6 +124,8 @@ class RepositoriesSubversionControllerTest < Test::Unit::TestCase
     def test_entry_download
       get :entry, :id => 1, :path => ['subversion_test', 'helloworld.c'], :format => 'raw'
       assert_response :success
+      assert_template ''
+      assert_equal 'attachment; filename="helloworld.c"', @response.headers['Content-Disposition']
     end
     
     def test_directory_entry
@@ -131,11 +144,11 @@ class RepositoriesSubversionControllerTest < Test::Unit::TestCase
                  :child => { :tag => 'li',
                              # link to the entry at rev 2
                              :child => { :tag => 'a', 
-                                         :attributes => {:href => '/repositories/entry/ecookbook/test/some/path/in/the/repo?rev=2'},
+                                         :attributes => {:href => '/projects/ecookbook/repository/revisions/2/entry/test/some/path/in/the/repo'},
                                          :content => 'repo',
                                          # link to partial diff
                                          :sibling =>  { :tag => 'a', 
-                                                        :attributes => { :href => '/repositories/diff/ecookbook/test/some/path/in/the/repo?rev=2' } 
+                                                        :attributes => { :href => '/projects/ecookbook/repository/revisions/2/diff/test/some/path/in/the/repo' } 
                                                        }
                                         }
                             }
@@ -153,11 +166,11 @@ class RepositoriesSubversionControllerTest < Test::Unit::TestCase
                  :child => { :tag => 'li',
                              # link to the entry at rev 2
                              :child => { :tag => 'a', 
-                                         :attributes => {:href => '/repositories/entry/ecookbook/path/in/the/repo?rev=2'},
+                                         :attributes => {:href => '/projects/ecookbook/repository/revisions/2/entry/path/in/the/repo'},
                                          :content => 'repo',
                                          # link to partial diff
                                          :sibling =>  { :tag => 'a', 
-                                                        :attributes => { :href => '/repositories/diff/ecookbook/path/in/the/repo?rev=2' } 
+                                                        :attributes => { :href => '/projects/ecookbook/repository/revisions/2/diff/path/in/the/repo' } 
                                                        }
                                         }
                             }

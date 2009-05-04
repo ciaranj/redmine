@@ -15,8 +15,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-require 'gloc'
-
 module Redmine
   module MenuManager
     module MenuController
@@ -101,7 +99,6 @@ module Redmine
               item.url
             end
             caption = item.caption(project)
-            caption = l(caption) if caption.is_a?(Symbol)
             if block_given?
               yield item, caption, url, (current_menu_item == item.name)
             else
@@ -180,7 +177,7 @@ module Redmine
     end
     
     class MenuItem
-      include GLoc
+      include Redmine::I18n
       attr_reader :name, :url, :param, :condition
       
       def initialize(name, url, options)
@@ -202,8 +199,11 @@ module Redmine
           c = @name.to_s.humanize if c.blank?
           c
         else
-          # check if localized string exists on first render (after GLoc strings are loaded)
-          @caption_key ||= (@caption || (l_has_string?("label_#{@name}".to_sym) ? "label_#{@name}".to_sym : @name.to_s.humanize))
+          if @caption.nil?
+            l_or_humanize(name, :prefix => 'label_')
+          else
+            @caption.is_a?(Symbol) ? l(@caption) : @caption
+          end
         end
       end
       

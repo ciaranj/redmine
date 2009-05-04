@@ -31,6 +31,20 @@ class NewsControllerTest < Test::Unit::TestCase
     User.current = nil
   end
   
+  def test_index_routing
+    assert_routing(
+      {:method => :get, :path => '/news'},
+      :controller => 'news', :action => 'index'
+    )
+  end
+  
+  def test_index_routing_formatted
+    assert_routing(
+      {:method => :get, :path => '/news.atom'},
+      :controller => 'news', :action => 'index', :format => 'atom'
+    )
+  end
+  
   def test_index
     get :index
     assert_response :success
@@ -38,12 +52,33 @@ class NewsControllerTest < Test::Unit::TestCase
     assert_not_nil assigns(:newss)
     assert_nil assigns(:project)
   end
+  
+  def test_index_with_project_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/567/news'},
+      :controller => 'news', :action => 'index', :project_id => '567'
+    )
+  end
+  
+  def test_index_with_project_routing_formatted
+    assert_routing(
+      {:method => :get, :path => '/projects/567/news.atom'},
+      :controller => 'news', :action => 'index', :project_id => '567', :format => 'atom'
+    )
+  end
 
   def test_index_with_project
     get :index, :project_id => 1
     assert_response :success
     assert_template 'index'
     assert_not_nil assigns(:newss)
+  end
+  
+  def test_show_routing
+    assert_routing(
+      {:method => :get, :path => '/news/2'},
+      :controller => 'news', :action => 'show', :id => '2'
+    )
   end
   
   def test_show
@@ -58,6 +93,17 @@ class NewsControllerTest < Test::Unit::TestCase
     assert_response 404
   end
   
+  def test_new_routing
+    assert_routing(
+      {:method => :get, :path => '/projects/567/news/new'},
+      :controller => 'news', :action => 'new', :project_id => '567'
+    )
+    assert_recognizes(
+      {:controller => 'news', :action => 'new', :project_id => '567'},
+      {:method => :post, :path => '/projects/567/news'}
+    )
+  end
+  
   def test_get_new
     @request.session[:user_id] = 2
     get :new, :project_id => 1
@@ -66,6 +112,9 @@ class NewsControllerTest < Test::Unit::TestCase
   end
   
   def test_post_new
+    ActionMailer::Base.deliveries.clear
+    Setting.notified_events << 'news_added'
+
     @request.session[:user_id] = 2
     post :new, :project_id => 1, :news => { :title => 'NewsControllerTest',
                                             :description => 'This is the description',
@@ -77,6 +126,18 @@ class NewsControllerTest < Test::Unit::TestCase
     assert_equal 'This is the description', news.description
     assert_equal User.find(2), news.author
     assert_equal Project.find(1), news.project
+    assert_equal 1, ActionMailer::Base.deliveries.size
+  end
+  
+  def test_edit_routing
+    assert_routing(
+      {:method => :get, :path => '/news/234'},
+      :controller => 'news', :action => 'show', :id => '234'
+    )
+    assert_recognizes(#TODO: PUT to news URI instead, need to modify form
+      {:controller => 'news', :action => 'edit', :id => '567'},
+      {:method => :post, :path => '/news/567/edit'}
+    )
   end
   
   def test_get_edit
@@ -89,7 +150,7 @@ class NewsControllerTest < Test::Unit::TestCase
   def test_post_edit
     @request.session[:user_id] = 2
     post :edit, :id => 1, :news => { :description => 'Description changed by test_post_edit' }
-    assert_redirected_to 'news/show/1'
+    assert_redirected_to 'news/1'
     news = News.find(1)
     assert_equal 'Description changed by test_post_edit', news.description
   end
@@ -110,7 +171,7 @@ class NewsControllerTest < Test::Unit::TestCase
   def test_add_comment
     @request.session[:user_id] = 2
     post :add_comment, :id => 1, :comment => { :comments => 'This is a NewsControllerTest comment' }
-    assert_redirected_to 'news/show/1'
+    assert_redirected_to 'news/1'
     
     comment = News.find(1).comments.find(:first, :order => 'created_on DESC')
     assert_not_nil comment
@@ -122,9 +183,16 @@ class NewsControllerTest < Test::Unit::TestCase
     comments_count = News.find(1).comments.size
     @request.session[:user_id] = 2
     post :destroy_comment, :id => 1, :comment_id => 2
-    assert_redirected_to 'news/show/1'
+    assert_redirected_to 'news/1'
     assert_nil Comment.find_by_id(2)
     assert_equal comments_count - 1, News.find(1).comments.size
+  end
+  
+  def test_destroy_routing
+    assert_recognizes(#TODO: should use DELETE to news URI, need to change form
+      {:controller => 'news', :action => 'destroy', :id => '567'},
+      {:method => :post, :path => '/news/567/destroy'}
+    )
   end
   
   def test_destroy

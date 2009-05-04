@@ -18,7 +18,7 @@
 require File.dirname(__FILE__) + '/../test_helper'
 
 class QueryTest < Test::Unit::TestCase
-  fixtures :projects, :enabled_modules, :users, :members, :roles, :trackers, :issue_statuses, :issue_categories, :enumerations, :issues, :custom_fields, :custom_values, :versions, :queries
+  fixtures :projects, :enabled_modules, :users, :members, :roles, :trackers, :issue_statuses, :issue_categories, :enumerations, :issues, :watchers, :custom_fields, :custom_values, :versions, :queries
 
   def test_custom_fields_for_all_projects_should_be_available_in_global_queries
     query = Query.new(:project => nil, :name => '_')
@@ -162,6 +162,26 @@ class QueryTest < Test::Unit::TestCase
     find_issues_with_query(query)
   end
   
+  def test_filter_watched_issues
+    User.current = User.find(1)
+    query = Query.new(:name => '_', :filters => { 'watcher_id' => {:operator => '=', :values => ['me']}})
+    result = find_issues_with_query(query)
+    assert_not_nil result
+    assert !result.empty?
+    assert_equal Issue.visible.watched_by(User.current).sort_by(&:id), result.sort_by(&:id)
+    User.current = nil
+  end
+  
+  def test_filter_unwatched_issues
+    User.current = User.find(1)
+    query = Query.new(:name => '_', :filters => { 'watcher_id' => {:operator => '!', :values => ['me']}})
+    result = find_issues_with_query(query)
+    assert_not_nil result
+    assert !result.empty?
+    assert_equal((Issue.visible - Issue.watched_by(User.current)).sort_by(&:id).size, result.sort_by(&:id).size)
+    User.current = nil
+  end
+  
   def test_default_columns
     q = Query.new
     assert !q.columns.empty? 
@@ -173,6 +193,31 @@ class QueryTest < Test::Unit::TestCase
     assert_equal [:tracker, :subject], q.columns.collect {|c| c.name}
     c = q.columns.first
     assert q.has_column?(c)
+  end
+  
+  def test_default_sort
+    q = Query.new
+    assert_equal [], q.sort_criteria
+  end
+  
+  def test_set_sort_criteria_with_hash
+    q = Query.new
+    q.sort_criteria = {'0' => ['priority', 'desc'], '2' => ['tracker']}
+    assert_equal [['priority', 'desc'], ['tracker', 'asc']], q.sort_criteria
+  end
+  
+  def test_set_sort_criteria_with_array
+    q = Query.new
+    q.sort_criteria = [['priority', 'desc'], 'tracker']
+    assert_equal [['priority', 'desc'], ['tracker', 'asc']], q.sort_criteria
+  end
+  
+  def test_create_query_with_sort
+    q = Query.new(:name => 'Sorted')
+    q.sort_criteria = [['priority', 'desc'], 'tracker']
+    assert q.save
+    q.reload
+    assert_equal [['priority', 'desc'], ['tracker', 'asc']], q.sort_criteria
   end
   
   def test_sort_by_string_custom_field_asc

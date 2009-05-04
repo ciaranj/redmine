@@ -23,8 +23,8 @@ class AttachmentsController; def rescue_action(e) raise e end; end
 
 
 class AttachmentsControllerTest < Test::Unit::TestCase
-  fixtures :users, :projects, :roles, :members, :enabled_modules, :issues, :attachments,
-           :versions, :wiki_pages, :wikis
+  fixtures :users, :projects, :roles, :members, :enabled_modules, :issues, :trackers, :attachments,
+           :versions, :wiki_pages, :wikis, :documents
   
   def setup
     @controller = AttachmentsController.new
@@ -53,12 +53,23 @@ class AttachmentsControllerTest < Test::Unit::TestCase
     get :show, :id => 5
     assert_response :success
     assert_template 'diff'
+    assert_equal 'text/html', @response.content_type
   end
   
   def test_show_text_file
     get :show, :id => 4
     assert_response :success
     assert_template 'file'
+    assert_equal 'text/html', @response.content_type
+  end
+  
+  def test_show_text_file_should_send_if_too_big
+    Setting.file_max_size_displayed = 512
+    Attachment.find(4).update_attribute :filesize, 754.kilobyte
+    
+    get :show, :id => 4
+    assert_response :success
+    assert_equal 'application/x-ruby', @response.content_type
   end
   
   def test_show_other
@@ -71,6 +82,11 @@ class AttachmentsControllerTest < Test::Unit::TestCase
     get :download, :id => 4
     assert_response :success
     assert_equal 'application/x-ruby', @response.content_type
+  end
+  
+  def test_download_missing_file
+    get :download, :id => 2
+    assert_response 404
   end
   
   def test_anonymous_on_private_private
@@ -86,7 +102,7 @@ class AttachmentsControllerTest < Test::Unit::TestCase
       post :destroy, :id => 1
     end
     # no referrer
-    assert_redirected_to 'projects/show/ecookbook'
+    assert_redirected_to 'projects/ecookbook'
     assert_nil Attachment.find_by_id(1)
     j = issue.journals.find(:first, :order => 'created_on DESC')
     assert_equal 'attachment', j.details.first.property

@@ -29,12 +29,44 @@ class AccountTest < ActionController::IntegrationTest
   # Replace this with your real tests.
   def test_login
     get "my/page"
-    assert_redirected_to "account/login"
+    assert_redirected_to "/login?back_url=http%3A%2F%2Fwww.example.com%2Fmy%2Fpage"
     log_user('jsmith', 'jsmith')
     
     get "my/account"
     assert_response :success
     assert_template "my/account"    
+  end
+  
+  def test_autologin
+    user = User.find(1)
+    Setting.autologin = "7"
+    Token.delete_all
+    
+    # User logs in with 'autologin' checked
+    post '/login', :username => user.login, :password => 'admin', :autologin => 1
+    assert_redirected_to 'my/page'
+    token = Token.find :first
+    assert_not_nil token
+    assert_equal user, token.user
+    assert_equal 'autologin', token.action
+    assert_equal user.id, session[:user_id]
+    assert_equal token.value, cookies['autologin']
+    
+    # Session is cleared
+    reset!
+    User.current = nil
+    # Clears user's last login timestamp
+    user.update_attribute :last_login_on, nil
+    assert_nil user.reload.last_login_on
+    
+    # User comes back with his autologin cookie
+    cookies[:autologin] = token.value
+    get '/my/page'
+    assert_response :success
+    assert_template 'my/page'
+    assert_equal user.id, session[:user_id]
+    assert_not_nil user.reload.last_login_on
+    assert user.last_login_on.utc > 10.second.ago.utc
   end
   
   def test_lost_password
@@ -45,7 +77,7 @@ class AccountTest < ActionController::IntegrationTest
     assert_template "account/lost_password"
     
     post "account/lost_password", :mail => 'jSmith@somenet.foo'
-    assert_redirected_to "account/login"
+    assert_redirected_to "/login"
     
     token = Token.find(:first)
     assert_equal 'recovery', token.action
@@ -57,7 +89,7 @@ class AccountTest < ActionController::IntegrationTest
     assert_template "account/password_recovery"
     
     post "account/lost_password", :token => token.value, :new_password => 'newpass', :new_password_confirmation => 'newpass'
-    assert_redirected_to "account/login"
+    assert_redirected_to "/login"
     assert_equal 'Password was successfully updated.', flash[:notice]
     
     log_user('jsmith', 'newpass')
@@ -78,7 +110,10 @@ class AccountTest < ActionController::IntegrationTest
     assert_response :success
     assert_template 'my/account'
     
-    assert User.find_by_login('newuser').active?
+    user = User.find_by_login('newuser')
+    assert_not_nil user
+    assert user.active?
+    assert_not_nil user.last_login_on
   end
   
   def test_register_with_manual_activation
@@ -86,7 +121,7 @@ class AccountTest < ActionController::IntegrationTest
     
     post 'account/register', :user => {:login => "newuser", :language => "en", :firstname => "New", :lastname => "User", :mail => "newuser@foo.bar"}, 
                              :password => "newpass", :password_confirmation => "newpass"
-    assert_redirected_to 'account/login'
+    assert_redirected_to '/login'
     assert !User.find_by_login('newuser').active?
   end
   
@@ -96,7 +131,7 @@ class AccountTest < ActionController::IntegrationTest
     
     post 'account/register', :user => {:login => "newuser", :language => "en", :firstname => "New", :lastname => "User", :mail => "newuser@foo.bar"}, 
                              :password => "newpass", :password_confirmation => "newpass"
-    assert_redirected_to 'account/login'
+    assert_redirected_to '/login'
     assert !User.find_by_login('newuser').active?
     
     token = Token.find(:first)
@@ -105,7 +140,7 @@ class AccountTest < ActionController::IntegrationTest
     assert !token.expired?
     
     get 'account/activate', :token => token.value
-    assert_redirected_to 'account/login'
+    assert_redirected_to '/login'
     log_user('newuser', 'newpass')
   end
   
@@ -139,7 +174,7 @@ class AccountTest < ActionController::IntegrationTest
     assert_no_tag :input, :attributes => { :name => 'user[password]' }
     
     post 'account/register', :user => {:firstname => 'Foo', :lastname => 'Smith', :mail => 'foo@bar.com'}
-    assert_redirected_to 'my/account'
+    assert_redirected_to '/my/account'
     
     user = User.find_by_login('foo')
     assert user.is_a?(User)

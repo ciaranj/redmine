@@ -1,5 +1,5 @@
-# redMine - project management software
-# Copyright (C) 2006  Jean-Philippe Lang
+# Redmine - project management software
+# Copyright (C) 2006-2009  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,6 +19,7 @@ class MyController < ApplicationController
   before_filter :require_login
 
   helper :issues
+  helper :custom_fields
 
   BLOCKS = { 'issuesassignedtome' => :label_assigned_to_me_issues,
              'issuesreportedbyme' => :label_reported_issues,
@@ -26,8 +27,8 @@ class MyController < ApplicationController
              'news' => :label_news_latest,
              # 'calendar' => :label_calendar,
              'documents' => :label_document_plural,
-             # 'timelog' => :label_spent_time
-           }.freeze
+             #'timelog' => :label_spent_time
+           }.merge(Redmine::Views::MyPage::Block.additional_blocks).freeze
 
   DEFAULT_LAYOUT = {  'top' => ['issuesassignedtome', 'issueswatched'] 
                    }.freeze
@@ -109,14 +110,14 @@ class MyController < ApplicationController
     session[:page_layout] = @blocks
     %w(top left right).each {|f| session[:page_layout][f] ||= [] }
     @block_options = []
-    BLOCKS.each {|k, v| @block_options << [l(v), k]}
+    BLOCKS.each {|k, v| @block_options << [l("my.blocks.#{v}", :default => [v, v.to_s.humanize]), k.dasherize]}
   end
   
   # Add a block to user's page
   # The block is added on top of the page
   # params[:block] : id of the block to add
   def add_block
-    block = params[:block]
+    block = params[:block].to_s.underscore
     render(:nothing => true) and return unless block && (BLOCKS.keys.include? block)
     @user = User.current
     # remove if already present in a group
@@ -129,7 +130,7 @@ class MyController < ApplicationController
   # Remove a block to user's page
   # params[:block] : id of the block to remove
   def remove_block
-    block = params[:block]
+    block = params[:block].to_s.underscore
     # remove block in all groups
     %w(top left right).each {|f| (session[:page_layout][f] ||= []).delete block }
     render :nothing => true
@@ -140,13 +141,15 @@ class MyController < ApplicationController
   # params[:list-(top|left|right)] : array of block ids of the group
   def order_blocks
     group = params[:group]
-    group_items = params["list-#{group}"]
-    if group_items and group_items.is_a? Array
-      # remove group blocks if they are presents in other groups
-      %w(top left right).each {|f|
-        session[:page_layout][f] = (session[:page_layout][f] || []) - group_items
-      }
-      session[:page_layout][group] = group_items    
+    if group.is_a?(String)
+      group_items = (params["list-#{group}"] || []).collect(&:underscore)
+      if group_items and group_items.is_a? Array
+        # remove group blocks if they are presents in other groups
+        %w(top left right).each {|f|
+          session[:page_layout][f] = (session[:page_layout][f] || []) - group_items
+        }
+        session[:page_layout][group] = group_items    
+      end
     end
     render :nothing => true
   end

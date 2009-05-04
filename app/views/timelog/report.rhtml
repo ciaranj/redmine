@@ -1,16 +1,17 @@
 <div class="contextual">
-<%= link_to_if_authorized l(:button_log_time), {:controller => 'timelog', :action => 'edit', :project_id => @project, :issue_id => @issue}, :class => 'icon icon-time' %>
+<%= link_to_if_authorized l(:button_log_time), {:controller => 'timelog', :action => 'edit', :project_id => @project, :issue_id => @issue}, :class => 'icon icon-time-add' %>
 </div>
 
 <%= render_timelog_breadcrumb %>
 
 <h2><%= l(:label_spent_time) %></h2>
 
-<% form_remote_tag(:url => {}, :update => 'content') do %>
+<% form_remote_tag(:url => {}, :html => {:method => :get}, :method => :get, :update => 'content') do %>
   <% @criterias.each do |criteria| %>
     <%= hidden_field_tag 'criterias[]', criteria, :id => nil %>
   <% end %>
-  <%= hidden_field_tag 'project_id', params[:project_id] %>
+  <%# TODO: get rid of the project_id field, that should already be in the URL %>
+  <%= hidden_field_tag('project_id', params[:project_id]) if @project %>
   <%= render :partial => 'date_range' %>
 
   <p><%= l(:label_details) %>: <%= select_tag 'columns', options_for_select([[l(:label_year), 'year'],
@@ -19,19 +20,20 @@
                                                                             [l(:label_day_plural).titleize, 'day']], @columns),
                                                         :onchange => "this.form.onsubmit();" %>
 
-  <%= l(:button_add) %>: <%= select_tag('criterias[]', options_for_select([[]] + (@available_criterias.keys - @criterias).collect{|k| [l(@available_criterias[k][:label]), k]}),
+  <%= l(:button_add) %>: <%= select_tag('criterias[]', options_for_select([[]] + (@available_criterias.keys - @criterias).collect{|k| [l_or_humanize(@available_criterias[k][:label]), k]}),
                                                           :onchange => "this.form.onsubmit();",
                                                           :style => 'width: 200px',
                                                           :id => nil,
                                                           :disabled => (@criterias.length >= 3)) %>
      <%= link_to_remote l(:button_clear), {:url => {:project_id => @project, :period_type => params[:period_type], :period => params[:period], :from => @from, :to => @to, :columns => @columns},
+                                           :method => :get,
                                            :update => 'content'
                                           }, :class => 'icon icon-reload' %></p>
 <% end %>
 
 <% unless @criterias.empty? %>
 <div class="total-hours">
-<p><%= l(:label_total) %>: <%= html_hours(lwr(:label_f_hour, @total_hours)) %></p>
+<p><%= l(:label_total) %>: <%= html_hours(l_hours(@total_hours)) %></p>
 </div>
 
 <% unless @hours.empty? %>
@@ -39,7 +41,7 @@
 <thead>
 <tr>
 <% @criterias.each do |criteria| %>
-  <th><%= l(@available_criterias[criteria][:label]) %></th>
+  <th><%= l_or_humanize(@available_criterias[criteria][:label]) %></th>
 <% end %>
 <% columns_width = (40 / (@periods.length+1)).to_i %>
 <% @periods.each do |period| %>
@@ -63,10 +65,9 @@
 </tbody>
 </table>
 
-<p class="other-formats">
-<%= l(:label_export_to) %>
-<span><%= link_to 'CSV', params.merge({:format => 'csv'}), :class => 'csv' %></span>
-</p>
+<% other_formats_links do |f| %>
+	<%= f.link_to 'CSV', :url => params %>
+<% end %>
 <% end %>
 <% end %>
 

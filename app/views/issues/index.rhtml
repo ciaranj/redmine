@@ -3,31 +3,16 @@
     <% html_title(l(:label_issue_plural)) %>
     
     <% form_tag({ :controller => 'queries', :action => 'new' }, :id => 'query_form') do %>
-    <%= hidden_field_tag('project_id', @project.id) if @project %>
+    <%= hidden_field_tag('project_id', @project.to_param) if @project %>
+		<div id="query_form_content">
     <fieldset id="filters"><legend><%= l(:label_filter_plural) %></legend>
-      <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
+    <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
     </fieldset>
-    <fieldset id="column_selection">
-      <legend>Columns 
-        <small><%= link_to_function('all', "$$('#column_selection input').each(function(el) { el.checked = true; })") %></small>
-        <small><%= link_to_function('none', "$$('#column_selection input').each(function(el) { el.checked = false; })") %></small> 
-      </legend>
-      <%= hidden_field_tag 'settings[issue_list_default_columns][]', '' %>
-      <p>
-        <% @query.available_columns.reject {|col| [:due_date, :start_date].include?(col.name) }.each do |column| %>
-          <label>
-            <%= check_box_tag 'column_names[]', column.name, @query.columns.include?(column) %>
-            <%= column.caption %>
-          </label>
-        <% end %>
-      </p>
-    </fieldset>
-    <fieldset id="group_selection">
-      <legend>Group</legend>
-      <%= select_tag :group, grouping_options(@query) %>
-    </fieldset>
-    <fieldset id="filter_apply">
+		<p><%= l(:field_group_by) %>
+		<%= select_tag('group_by', options_for_select([[]] + @query.groupable_columns.collect {|c| [c.caption, c.name.to_s]}, @query.group_by)) %></p>
+		</div>
     <p class="buttons">
+
     <%= link_to_remote l(:button_apply), 
                        { :url => { :set_filter => 1 },
                          :update => "content",
@@ -35,7 +20,8 @@
                        }, :class => 'icon icon-checked' %>
                        
     <%= link_to_remote l(:button_clear),
-                       { :url => { :set_filter => 1 }, 
+                       { :url => { :set_filter => 1, :project_id => @project },
+                         :method => :get,
                          :update => "content",
                        }, :class => 'icon icon-reload'  %>
                        
@@ -43,7 +29,6 @@
     <%= link_to l(:button_save), {}, :onclick => "$('query_form').submit(); return false;", :class => 'icon icon-save' %>
     <% end %>
     </p>
-    </fieldset>
     <% end %>
 <% else %>
     <div class="contextual">
@@ -56,6 +41,7 @@
     <div id="query_form"></div>
     <% html_title @query.name %>
 <% end %>
+
 <%= error_messages_for 'query' %>
 <% if @query.valid? %>
 <% if @issues.empty? %>
@@ -63,14 +49,14 @@
 <% else %>
 <%= render :partial => 'issues/list', :locals => {:issues => @issues, :query => @query} %>
 <p class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></p>
-
-<p class="other-formats">
-<%= l(:label_export_to) %>
-<span><%= link_to 'Atom', {:query_id => @query, :format => 'atom', :key => User.current.rss_key}, :class => 'feed' %></span>
-<span><%= link_to 'CSV', {:format => 'csv'}, :class => 'csv' %></span>
-<span><%= link_to 'PDF', {:format => 'pdf'}, :class => 'pdf' %></span>
-</p>
 <% end %>
+
+<% other_formats_links do |f| %>
+	<%= f.link_to 'Atom', :url => { :project_id => @project, :query_id => (@query.new_record? ? nil : @query), :key => User.current.rss_key } %>
+	<%= f.link_to 'CSV', :url => { :project_id => @project } %>
+	<%= f.link_to 'PDF', :url => { :project_id => @project } %>
+<% end %>
+
 <% end %>
 
 <% content_for :sidebar do %>

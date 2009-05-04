@@ -78,15 +78,15 @@ class WikiPageTest < Test::Unit::TestCase
     # A page that doesn't exist
     page.parent_title = 'Unknown title'
     assert !page.save
-    assert_equal :activerecord_error_invalid, page.errors.on(:parent_title)
+    assert_equal I18n.translate('activerecord.errors.messages.invalid'), page.errors.on(:parent_title)
     # A child page
     page.parent_title = 'Page_with_an_inline_image'
     assert !page.save
-    assert_equal :activerecord_error_circular_dependency, page.errors.on(:parent_title)
+    assert_equal I18n.translate('activerecord.errors.messages.circular_dependency'), page.errors.on(:parent_title)
     # The page itself
     page.parent_title = 'CookBook_documentation'
     assert !page.save
-    assert_equal :activerecord_error_circular_dependency, page.errors.on(:parent_title)
+    assert_equal I18n.translate('activerecord.errors.messages.circular_dependency'), page.errors.on(:parent_title)
 
     page.parent_title = 'Another_page'
     assert page.save
@@ -99,5 +99,19 @@ class WikiPageTest < Test::Unit::TestCase
     # make sure that page content and its history are deleted
     assert WikiContent.find_all_by_page_id(1).empty?
     assert WikiContent.versioned_class.find_all_by_page_id(1).empty?
+  end
+  
+  def test_destroy_should_not_nullify_children
+    page = WikiPage.find(2)
+    child_ids = page.child_ids
+    assert child_ids.any?
+    page.destroy
+    assert_nil WikiPage.find_by_id(2)
+    
+    children = WikiPage.find_all_by_id(child_ids)
+    assert_equal child_ids.size, children.size
+    children.each do |child|
+      assert_nil child.parent_id
+    end
   end
 end

@@ -24,11 +24,21 @@ class Member < ActiveRecord::Base
   validates_uniqueness_of :user_id, :scope => :project_id
 
   def validate
-    errors.add :role_id, :activerecord_error_invalid if role && !role.member?
+    errors.add :role_id, :invalid if role && !role.member?
   end
   
   def name
     self.user.name
+  end
+  
+  # Sets user by login
+  def user_login=(login)
+    login = login.to_s
+    unless login.blank?
+      if (u = User.find_by_login(login))
+        self.user = u
+      end
+    end
   end
   
   def <=>(member)

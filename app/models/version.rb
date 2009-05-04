@@ -25,7 +25,7 @@ class Version < ActiveRecord::Base
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:project_id]
   validates_length_of :name, :maximum => 60
-  validates_format_of :effective_date, :with => /^\d{4}-\d{2}-\d{2}$/, :message => 'activerecord_error_not_a_date', :allow_nil => true
+  validates_format_of :effective_date, :with => /^\d{4}-\d{2}-\d{2}$/, :message => :not_a_date, :allow_nil => true
   
   def start_date
     effective_date
@@ -50,21 +50,24 @@ class Version < ActiveRecord::Base
     effective_date && (effective_date <= Date.today) && (open_issues_count == 0)
   end
   
+  # Returns the completion percentage of this version based on the amount of open/closed issues
+  # and the time spent on the open issues.
   def completed_pourcent
-    if fixed_issues.count == 0
+    if issues_count == 0
       0
     elsif open_issues_count == 0
       100
     else
-      (closed_issues_count * 100 + Issue.sum('done_ratio', :include => 'status', :conditions => ["fixed_version_id = ? AND is_closed = ?", id, false]).to_f) / fixed_issues.count
+      issues_progress(false) + issues_progress(true)
     end
   end
   
+  # Returns the percentage of issues that have been marked as 'closed'.
   def closed_pourcent
-    if fixed_issues.count == 0
+    if issues_count == 0
       0
     else
-      closed_issues_count * 100.0 / fixed_issues.count
+      issues_progress(false)
     end
   end
   
@@ -73,10 +76,17 @@ class Version < ActiveRecord::Base
     effective_date && (effective_date < Date.today) && (open_issues_count > 0)
   end
   
+  # Returns assigned issues count
+  def issues_count
+    @issue_count ||= fixed_issues.count
+  end
+  
+  # Returns the total amount of open issues for this version.
   def open_issues_count
     @open_issues_count ||= Issue.count(:all, :conditions => ["fixed_version_id = ? AND is_closed = ?", self.id, false], :include => :status)
   end
 
+  # Returns the total amount of closed issues for this version.
   def closed_issues_count
     @closed_issues_count ||= Issue.count(:all, :conditions => ["fixed_version_id = ? AND is_closed = ?", self.id, true], :include => :status)
   end
@@ -103,5 +113,41 @@ class Version < ActiveRecord::Base
 private
   def check_integrity
     raise "Can't delete version" if self.fixed_issues.find(:first)
+  end
+  
+  # Returns the average estimated time of assigned issues
+  # or 1 if no issue has an estimated time
+  # Used to weigth unestimated issues in progress calculation
+  def estimated_average
+    if @estimated_average.nil?
+      average = fixed_issues.average(:estimated_hours).to_f
+      if average == 0
+        average = 1
+      end
+      @estimated_average = average
+    end
+    @estimated_average
+  end
+  
+  # Returns the total progress of open or closed issues.  The returned percentage takes into account
+  # the amount of estimated time set for this version.
+  #
+  # Examples:
+  # issues_progress(true)   => returns the progress percentage for open issues.
+  # issues_progress(false)  => returns the progress percentage for closed issues.
+  def issues_progress(open)
+    @issues_progress ||= {}
+    @issues_progress[open] ||= begin
+      progress = 0
+      if issues_count > 0
+        ratio = open ? 'done_ratio' : 100
+        
+        done = fixed_issues.sum("COALESCE(estimated_hours, #{estimated_average}) * #{ratio}",
+                                  :include => :status,
+                                  :conditions => ["is_closed = ?", !open]).to_f
+        progress = done / (estimated_average * issues_count)
+      end
+      progress
+    end
   end
 end

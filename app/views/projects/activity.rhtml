@@ -1,5 +1,5 @@
 <h2><%= @author.nil? ? l(:label_activity) : l(:label_user_activity, link_to_user(@author)) %></h2>
-<p class="subtitle"><%= "#{l(:label_date_from)} #{format_date(@date_to - @days)} #{l(:label_date_to).downcase} #{format_date(@date_to-1)}" %></p>
+<p class="subtitle"><%= l(:label_date_from_to, :start => format_date(@date_to - @days), :end => format_date(@date_to-1)) %></p>
 
 <div id="activity">
 <% @events_by_day.keys.sort.reverse.each do |day| %>
@@ -22,21 +22,20 @@
 
 <div style="float:left;">
 <%= link_to_remote(('&#171; ' + l(:label_previous)), 
-                   {:update => "content", :url => params.merge(:from => @date_to - @days - 1), :complete => 'window.scrollTo(0,0)'},
+                   {:update => "content", :url => params.merge(:from => @date_to - @days - 1), :method => :get, :complete => 'window.scrollTo(0,0)'},
                    {:href => url_for(params.merge(:from => @date_to - @days - 1)),
-                    :title => "#{l(:label_date_from)} #{format_date(@date_to - 2*@days)} #{l(:label_date_to).downcase} #{format_date(@date_to - @days - 1)}"}) %>
+                    :title => l(:label_date_from_to, :start => format_date(@date_to - 2*@days), :end => format_date(@date_to - @days - 1))}) %>
 </div>
 <div style="float:right;">
 <%= link_to_remote((l(:label_next) + ' &#187;'), 
-                   {:update => "content", :url => params.merge(:from => @date_to + @days - 1), :complete => 'window.scrollTo(0,0)'},
+                   {:update => "content", :url => params.merge(:from => @date_to + @days - 1), :method => :get, :complete => 'window.scrollTo(0,0)'},
                    {:href => url_for(params.merge(:from => @date_to + @days - 1)),
-                    :title => "#{l(:label_date_from)} #{format_date(@date_to)} #{l(:label_date_to).downcase} #{format_date(@date_to + @days - 1)}"}) unless @date_to >= Date.today %>
+                    :title => l(:label_date_from_to, :start => format_date(@date_to), :end => format_date(@date_to + @days - 1))}) unless @date_to >= Date.today %>
 </div>
 &nbsp;
-<p class="other-formats">
-    <%= l(:label_export_to) %>
-    <%= link_to 'Atom', params.merge(:format => :atom, :from => nil, :key => User.current.rss_key), :class => 'feed' %>
-</p>
+<% other_formats_links do |f| %>
+	<%= f.link_to 'Atom', :url => params.merge(:from => nil, :key => User.current.rss_key) %>
+<% end %>
 
 <% content_for :header_tags do %>
 <%= auto_discovery_link_tag(:atom, params.merge(:format => 'atom', :from => nil, :key => User.current.rss_key)) %>
@@ -46,9 +45,11 @@
 <% form_tag({}, :method => :get) do %>
 <h3><%= l(:label_activity) %></h3>
 <p><% @activity.event_types.each do |t| %>
-<label><%= check_box_tag "show_#{t}", 1, @activity.scope.include?(t) %> <%= l("label_#{t.singularize}_plural")%></label><br />
+<%= check_box_tag "show_#{t}", 1, @activity.scope.include?(t) %>
+<%= link_to(l("label_#{t.singularize}_plural"), {"show_#{t}" => 1, :user_id => params[:user_id]})%>
+<br />
 <% end %></p>
-<% if @project && @project.active_children.any? %>
+<% if @project && @project.descendants.active.any? %>
     <p><label><%= check_box_tag 'with_subprojects', 1, @with_subprojects %> <%=l(:label_subproject_plural)%></label></p>
     <%= hidden_field_tag 'with_subprojects', 0 %>
 <% end %>

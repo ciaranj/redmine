@@ -19,10 +19,22 @@
 <p><label for="query_default_columns"><%=l(:label_default_columns)%></label>
 <%= check_box_tag 'default_columns', 1, @query.has_default_columns?, :id => 'query_default_columns',
       :onclick => 'if (this.checked) {Element.hide("columns")} else {Element.show("columns")}' %></p>
+
+<p><label for="query_group_by"><%= l(:field_group_by) %></label>
+<%= select 'query', 'group_by', @query.groupable_columns.collect {|c| [c.caption, c.name.to_s]}, :include_blank => true %></p>
 </div>
 
 <fieldset><legend><%= l(:label_filter_plural) %></legend>
 <%= render :partial => 'queries/filters', :locals => {:query => query}%>
+</fieldset>
+
+<fieldset><legend><%= l(:label_sort) %></legend>
+<% 3.times do |i| %>
+<%= i+1 %>: <%= select_tag("query[sort_criteria][#{i}][]",
+									options_for_select([[]] + query.available_columns.select(&:sortable?).collect {|column| [column.caption, column.name.to_s]}, @query.sort_criteria_key(i))) %>
+				    <%= select_tag("query[sort_criteria][#{i}][]",
+							    		  		options_for_select([[], [l(:label_ascending), 'asc'], [l(:label_descending), 'desc']], @query.sort_criteria_order(i))) %><br />
+<% end %>
 </fieldset>
 
 <%= render :partial => 'queries/columns', :locals => {:query => query}%>

@@ -36,4 +36,15 @@ class JournalTest < Test::Unit::TestCase
     assert_kind_of IssueStatus, status
     assert_equal 2, status.id 
   end
+  
+  def test_create_should_send_email_notification
+    ActionMailer::Base.deliveries.clear
+    issue = Issue.find(:first)
+    user = User.find(:first)
+    journal = issue.init_journal(user, issue)
+
+    assert journal.save
+    assert_equal 1, ActionMailer::Base.deliveries.size
+  end
+
 end
