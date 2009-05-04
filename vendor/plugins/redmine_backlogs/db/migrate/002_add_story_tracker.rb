@@ -1,7 +1,8 @@
 
 # Use rake db:migrate_plugins to migrate installed plugins
 class AddStoryTracker < ActiveRecord::Migration
- include GLoc
+  include Redmine::I18n
+
   def self.up
           t= Tracker.create!(:name => 'Story', :is_in_chlog => false, :is_in_roadmap => false, :position => 4)
           new       = IssueStatus.find_by_name(l(:default_issue_status_new))
