@@ -46,17 +46,14 @@
 </tr>
 <tr>
     <td class="fixed-version"><b><%=l(:field_fixed_version)%>:</b></td><td><%= @issue.fixed_version ? link_to_version(@issue.fixed_version) : "-" %></td>
-<<<<<<< HEAD:app/views/issues/show.rhtml
+    <% if @issue.estimated_hours %>
+    <td class="estimated-hours"><b><%=l(:field_estimated_hours)%>:</b></td><td><%= l_hours(@issue.estimated_hours) %></td>
+    <% end %>
     <td class="progress"><b><%=l(:field_done_ratio)%>:</b></td><td class="progress"><%= progress_bar @issue.done_ratio, :width => '80px', :legend => "#{@issue.done_ratio}%" %></td>
     
 </tr>
 <tr>
   <td class="category"><b><%=l(:field_category)%>:</b></td><td><%=h @issue.category ? @issue.category.name : "-" %></td>
-=======
-    <% if @issue.estimated_hours %>
-    <td class="estimated-hours"><b><%=l(:field_estimated_hours)%>:</b></td><td><%= l_hours(@issue.estimated_hours) %></td>
-    <% end %>
->>>>>>> 1930cf3d4603f996e1639ca535b3b6a5b2604d44:app/views/issues/show.rhtml
 </tr>
 <tr>
 <% n = 0 -%>

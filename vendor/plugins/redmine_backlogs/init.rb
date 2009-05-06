@@ -10,6 +10,7 @@ Dispatcher.to_prepare do
   Issue.class_eval { include ScrumAlliance::Redmine::ClosingOutExtension }
   
   Issue.class_eval { include ScrumAlliance::Redmine::RankExtension }
+  Issue.class_eval { include ScrumAlliance::Redmine::AddExtraClassesToIssueExtension }
   Query.available_columns << QueryColumn.new(:rank, :sortable => "#{Issue.table_name}.rank")
   
   Issue.class_eval { include ScrumAlliance::Redmine::StoryPointExtension::Issue }
