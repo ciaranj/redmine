@@ -26,6 +26,7 @@ class IssuesControllerTest < Test::Unit::TestCase
            :users,
            :roles,
            :members,
+           :member_roles,
            :issues,
            :issue_statuses,
            :versions,
@@ -830,6 +831,13 @@ class IssuesControllerTest < Test::Unit::TestCase
                           :content => notes
     assert_tag :input, :attributes => { :name => 'time_entry[hours]', :value => "2z" }
   end
+  
+  def test_get_bulk_edit
+    @request.session[:user_id] = 2
+    get :bulk_edit, :ids => [1, 2]
+    assert_response :success
+    assert_template 'bulk_edit'
+  end
 
   def test_bulk_edit
     @request.session[:user_id] = 2
@@ -863,6 +871,18 @@ class IssuesControllerTest < Test::Unit::TestCase
 
     assert_response 302
     assert_equal 2, ActionMailer::Base.deliveries.size
+  end
+
+  def test_bulk_edit_status
+    @request.session[:user_id] = 2
+    # update issues priority
+    post :bulk_edit, :ids => [1, 2], :priority_id => '',
+                                     :assigned_to_id => '',
+                                     :status_id => '5',
+                                     :notes => 'Bulk editing status'
+    assert_response 302
+    issue = Issue.find(1)
+    assert issue.closed?
   end
 
   def test_bulk_edit_custom_field
@@ -904,14 +924,14 @@ class IssuesControllerTest < Test::Unit::TestCase
   end
   
   def test_move_one_issue_to_another_project
-    @request.session[:user_id] = 1
+    @request.session[:user_id] = 2
     post :move, :id => 1, :new_project_id => 2
     assert_redirected_to :action => 'index', :project_id => 'ecookbook'
     assert_equal 2, Issue.find(1).project_id
   end
 
   def test_bulk_move_to_another_project
-    @request.session[:user_id] = 1
+    @request.session[:user_id] = 2
     post :move, :ids => [1, 2], :new_project_id => 2
     assert_redirected_to :action => 'index', :project_id => 'ecookbook'
     # Issues moved to project 2
@@ -923,7 +943,7 @@ class IssuesControllerTest < Test::Unit::TestCase
   end
  
   def test_bulk_move_to_another_tracker
-    @request.session[:user_id] = 1
+    @request.session[:user_id] = 2
     post :move, :ids => [1, 2], :new_tracker_id => 2
     assert_redirected_to :action => 'index', :project_id => 'ecookbook'
     assert_equal 2, Issue.find(1).tracker_id
@@ -931,7 +951,7 @@ class IssuesControllerTest < Test::Unit::TestCase
   end
 
   def test_bulk_copy_to_another_project
-    @request.session[:user_id] = 1
+    @request.session[:user_id] = 2
     assert_difference 'Issue.count', 2 do
       assert_no_difference 'Project.find(1).issues.count' do
         post :move, :ids => [1, 2], :new_project_id => 2, :copy_options => {:copy => '1'}

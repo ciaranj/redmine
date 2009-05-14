@@ -147,7 +147,7 @@ class IssuesController < ApplicationController
       return
     end    
     @issue.status = default_status
-    @allowed_statuses = ([default_status] + default_status.find_new_statuses_allowed_to(User.current.role_for_project(@project), @issue.tracker)).uniq
+    @allowed_statuses = ([default_status] + default_status.find_new_statuses_allowed_to(User.current.roles_for_project(@project), @issue.tracker)).uniq
     
     if request.get? || request.xhr?
       @issue.start_date ||= Date.today
@@ -257,7 +257,7 @@ class IssuesController < ApplicationController
         issue.custom_field_values = custom_field_values if custom_field_values && !custom_field_values.empty?
         call_hook(:controller_issues_bulk_edit_before_save, { :params => params, :issue => issue })
         # Don't save any change to the issue if the user is not authorized to apply the requested status
-        unless (status.nil? || (issue.status.new_status_allowed_to?(status, current_role, issue.tracker) && issue.status = status)) && issue.save
+        unless (status.nil? || (issue.new_statuses_allowed_to(User.current).include?(status) && issue.status = status)) && issue.save
           # Keep unsaved issue ids to display them in flash error
           unsaved_issue_ids << issue.id
         end
@@ -274,7 +274,7 @@ class IssuesController < ApplicationController
     end
     # Find potential statuses the user could be allowed to switch issues to
     @available_statuses = Workflow.find(:all, :include => :new_status,
-                                              :conditions => {:role_id => current_role.id}).collect(&:new_status).compact.uniq.sort
+                                              :conditions => {:role_id => User.current.roles_for_project(@project).collect(&:id)}).collect(&:new_status).compact.uniq.sort
     @custom_fields = @project.issue_custom_fields.select {|f| f.field_format == 'list'}
   end
 
@@ -285,7 +285,7 @@ class IssuesController < ApplicationController
       # admin is allowed to move issues to any active (visible) project
       @allowed_projects = Project.find(:all, :conditions => Project.visible_by(User.current))
     else
-      User.current.memberships.each {|m| @allowed_projects << m.project if m.role.allowed_to?(:move_issues)}
+      User.current.memberships.each {|m| @allowed_projects << m.project if m.roles.detect {|r| r.allowed_to?(:move_issues)}}
     end
     @target_project = @allowed_projects.detect {|p| p.id.to_s == params[:new_project_id]} if params[:new_project_id]
     @target_project ||= @project    
