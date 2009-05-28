@@ -57,6 +57,10 @@ class QueriesController < ApplicationController
       end
     end
   end
+  
+  def copy
+    @query.name = "Copy of " + @query.name
+  end
 
   def destroy
     @query.destroy if request.post?
