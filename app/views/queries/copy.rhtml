@@ -1,4 +1,4 @@
-<h2><%= l(:label_query_copy) %></h2>
+<h2><%= l(:label_query_copy, :old_query_name=>@query.name) %></h2>
 
 <% form_tag({:action => 'new', :project_id => @query.project}, :onsubmit => 'selectAllOptions("selected_columns");') do %>
   <%= render :partial => 'form', :locals => {:query => @query} %>
