@@ -251,7 +251,11 @@ class Project < ActiveRecord::Base
   # Returns an array of the Versions used by the project, its active
   # sub projects, and its active parent projects
   def inherited_versions
-    @inherited_versions ||= self.root.self_and_descendants.collect(&:versions).flatten.sort
+    @inherited_versions ||= self.root.self_and_descendants.
+      delete_if {|p| !p.active? }.
+      collect(&:versions).
+      flatten.
+      sort
   end
   
   # Returns a hash of project users grouped by role

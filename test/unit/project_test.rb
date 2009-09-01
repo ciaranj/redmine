@@ -248,7 +248,21 @@ class ProjectTest < Test::Unit::TestCase
 
     assert_equal [1,2,3,4], parent.inherited_versions.collect(&:id)
   end
-  
+
+  def test_inherited_versions_should_ignore_archived_subprojects
+    parent = Project.find(1)
+    child = parent.children.find(3)
+    child.archive
+    parent.reload
+    
+    assert [1,2,3], parent.version_ids
+    assert [4], child.version_ids
+
+    assert_equal 3, parent.inherited_versions.size
+
+    assert_equal [1,2,3], parent.inherited_versions.collect(&:id)
+  end
+
   def test_next_identifier
     ProjectCustomField.delete_all
     Project.create!(:name => 'last', :identifier => 'p2008040')
