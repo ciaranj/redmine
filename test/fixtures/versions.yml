@@ -23,4 +23,11 @@ versions_003:
   id: 3
   description: Future version
   effective_date: 
-  
+versions_004: 
+  created_on: 2006-07-19 21:00:33 +02:00
+  name: "2.0"
+  project_id: 3
+  updated_on: 2006-07-19 21:00:33 +02:00
+  id: 4
+  description: Future version on subproject
+  effective_date: 

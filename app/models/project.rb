@@ -247,6 +247,12 @@ class Project < ActiveRecord::Base
                          :conditions => ["#{Project.table_name}.lft >= ? AND #{Project.table_name}.rgt <= ? AND #{Project.table_name}.status = #{STATUS_ACTIVE}", lft, rgt],
                          :order => "#{Tracker.table_name}.position")
   end
+
+  # Returns an array of the Versions used by the project, its active
+  # sub projects, and its active parent projects
+  def inherited_versions
+    @inherited_versions ||= self.root.self_and_descendants.collect(&:versions).flatten.sort
+  end
   
   # Returns a hash of project users grouped by role
   def users_by_role

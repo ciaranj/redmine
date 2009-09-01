@@ -21,7 +21,7 @@ class ProjectTest < Test::Unit::TestCase
   fixtures :projects, :enabled_modules, 
            :issues, :issue_statuses, :journals, :journal_details,
            :users, :members, :member_roles, :roles, :projects_trackers, :trackers, :boards,
-           :queries
+           :queries, :versions
 
   def setup
     @ecookbook = Project.find(1)
@@ -232,6 +232,21 @@ class ProjectTest < Test::Unit::TestCase
     parent.children.each(&:archive)
     
     assert_equal [1,2], parent.rolled_up_trackers.collect(&:id)
+  end
+
+  def test_inherited_versions
+    parent = Project.find(1)
+    child = parent.children.find(3)
+    
+    assert [1,2,3], parent.version_ids
+    assert [4], child.version_ids
+
+    assert_equal 4, parent.inherited_versions.size
+    parent.inherited_versions.each do |version|
+      assert_kind_of Version, version
+    end
+
+    assert_equal [1,2,3,4], parent.inherited_versions.collect(&:id)
   end
   
   def test_next_identifier
