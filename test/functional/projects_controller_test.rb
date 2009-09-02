@@ -316,6 +316,16 @@ class ProjectsControllerTest < Test::Unit::TestCase
                    :attributes => { :href => '/attachments/download/9/version_file.zip' }
   end
 
+  def test_list_files_with_inherited_versions
+    get :list_files, :id => 1
+    assert_response :success
+    assert_not_nil assigns(:containers)
+    
+    # file attached to a subproject's version
+    assert_tag :a, :content => 'version_file.zip',
+                   :attributes => { :href => '/attachments/download/11/version_file.zip' }
+  end
+
   def test_list_files_routing
     assert_routing(
       {:method => :get, :path => '/projects/33/files'},

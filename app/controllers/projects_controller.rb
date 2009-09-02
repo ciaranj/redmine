@@ -240,7 +240,9 @@ class ProjectsController < ApplicationController
                 'downloads' => "#{Attachment.table_name}.downloads"
                 
     @containers = [ Project.find(@project.id, :include => :attachments, :order => sort_clause)]
-    @containers += @project.versions.find(:all, :include => :attachments, :order => sort_clause).sort.reverse
+    # Need get the ids separately in order to add the finder options
+    version_ids = @project.inherited_versions.collect(&:id)
+    @containers += Version.find_all_by_id(version_ids, :include => :attachments, :order => sort_clause).sort.reverse
     render :layout => !request.xhr?
   end
   
