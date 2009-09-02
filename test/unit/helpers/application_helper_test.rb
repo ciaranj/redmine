@@ -32,6 +32,16 @@ class ApplicationHelperTest < HelperTestCase
   def setup
     super
   end
+
+  def test_format_version_name_is_authorized
+    User.current = User.find(1)
+    assert_equal "eCookbook - 0.1", format_version_name(Version.find(1))
+  end
+  
+  def test_format_version_name_is_unauthorized
+    User.current = User.find(3)
+    assert_equal "You are not authorized to view this.", format_version_name(Version.find(5))
+  end
   
   def test_auto_links
     to_test = {

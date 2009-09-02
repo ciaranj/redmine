@@ -97,6 +97,14 @@ module ApplicationHelper
     h(truncate(text.to_s, :length => 120).gsub(%r{[\r\n]*<(pre|code)>.*$}m, '...')).gsub(/[\r\n]+/, "<br />")
   end
 
+  def format_version_name(version)
+    if User.current.allowed_to?(:view_issues, version.project)
+      "#{h(version.project.name)} - #{h(version.name)}"
+    else
+      "#{l(:text_not_authorized)}"
+    end
+  end
+
   def due_date_distance_in_words(date)
     if date
       l((date < Date.today ? :label_roadmap_overdue : :label_roadmap_due_in), distance_of_date_in_words(Date.today, date))

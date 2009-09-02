@@ -781,6 +781,8 @@ en:
   text_wiki_page_nullify_children: "Keep child pages as root pages"
   text_wiki_page_destroy_children: "Delete child pages and all their descendants"
   text_wiki_page_reassign_children: "Reassign child pages to this parent page"
+  text_not_authorized: You are not authorized to view this.
+
   
   default_role_manager: Manager
   default_role_developper: Developer
