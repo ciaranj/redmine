@@ -66,6 +66,10 @@ module IssuesHelper
     @sidebar_queries
   end
 
+  def inherited_version_options(project)
+    project.inherited_versions.sort.collect {|v| ["#{v.project.name} - #{v.name}",v.id]}
+  end
+
   def show_detail(detail, no_html=false)
     case detail.property
     when 'attr'
