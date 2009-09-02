@@ -248,7 +248,11 @@ class ProjectsController < ApplicationController
   def changelog
     @trackers = @project.trackers.find(:all, :conditions => ["is_in_chlog=?", true], :order => 'position')
     retrieve_selected_tracker_ids(@trackers)    
-    @versions = @project.versions.sort
+    if params[:inherited_versions]
+      @versions = @project.inherited_versions.sort
+    else
+      @versions = @project.versions.sort
+    end
   end
 
   def roadmap

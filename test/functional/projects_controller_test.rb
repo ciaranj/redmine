@@ -337,6 +337,15 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert_not_nil assigns(:versions)
   end
   
+  def test_changelog_showing_inherited_versions
+    get :changelog, :id => 1, :inherited_versions => 1
+    assert_response :success
+    assert_template 'changelog'
+    assert_not_nil assigns(:versions)
+    # Version on subproject appears
+    assert assigns(:versions).include?(Version.find(4))
+  end
+
   def test_roadmap_routing
     assert_routing(
       {:method => :get, :path => 'projects/33/roadmap'},

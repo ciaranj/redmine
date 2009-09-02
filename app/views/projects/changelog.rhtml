@@ -32,6 +32,8 @@
   <label><%= check_box_tag "tracker_ids[]", tracker.id, (@selected_tracker_ids.include? tracker.id.to_s) %>
   <%= tracker.name %></label><br />
 <% end %>
+<br />
+<label for="inherited_versions"><%= check_box_tag "inherited_versions", 1, params[:inherited_versions] %> <%= l(:label_show_inherited_versions) %></label>
 <p><%= submit_tag l(:button_apply), :class => 'button-small' %></p>
 <% end %>
 
