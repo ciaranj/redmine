@@ -365,6 +365,15 @@ class ProjectsControllerTest < Test::Unit::TestCase
     # Completed version appears
     assert assigns(:versions).include?(Version.find(1))
   end
+
+  def test_roadmap_showing_inherited_versions
+    get :roadmap, :id => 1, :inherited_versions => 1
+    assert_response :success
+    assert_template 'roadmap'
+    assert_not_nil assigns(:versions)
+    # Version on subproject appears
+    assert assigns(:versions).include?(Version.find(4))
+  end
   
   def test_project_activity_routing
     assert_routing(
