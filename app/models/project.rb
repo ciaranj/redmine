@@ -256,6 +256,16 @@ class Project < ActiveRecord::Base
       collect(&:versions).
       flatten.
       sort
+
+    yield @inherited_versions if block_given?
+    @inherited_versions
+  end
+
+  # Returns the inherited_versions that are visible to +user+
+  def inherited_versions_visible_to_user(user=User.current)
+    return inherited_versions do |versions|
+      versions.delete_if {|v| !user.allowed_to?(:view_issues, v.project) }
+    end
   end
   
   # Returns a hash of project users grouped by role

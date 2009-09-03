@@ -241,12 +241,12 @@ class ProjectTest < Test::Unit::TestCase
     assert [1,2,3], parent.version_ids
     assert [4], child.version_ids
 
-    assert_equal 4, parent.inherited_versions.size
+    assert_equal 5, parent.inherited_versions.size
     parent.inherited_versions.each do |version|
       assert_kind_of Version, version
     end
 
-    assert_equal [1,2,3,4], parent.inherited_versions.collect(&:id)
+    assert_equal [1,2,3,4,6], parent.inherited_versions.collect(&:id)
   end
 
   def test_inherited_versions_should_ignore_archived_subprojects
@@ -257,10 +257,25 @@ class ProjectTest < Test::Unit::TestCase
     
     assert [1,2,3], parent.version_ids
     assert [4], child.version_ids
+    assert !parent.inherited_versions.collect(&:id).include?(4)
+  end
 
-    assert_equal 3, parent.inherited_versions.size
+  def test_inherited_versions_visible_to_user
+    user = User.find(3)
+    parent = Project.find(1)
+    child = parent.children.find(5)
+    
+    assert [1,2,3], parent.version_ids
+    assert [6], child.version_ids
 
-    assert_equal [1,2,3], parent.inherited_versions.collect(&:id)
+    versions = parent.inherited_versions_visible_to_user(user)
+    
+    assert_equal 4, versions.size
+    versions.each do |version|
+      assert_kind_of Version, version
+    end
+
+    assert !versions.collect(&:id).include?(6)
   end
 
   def test_next_identifier
