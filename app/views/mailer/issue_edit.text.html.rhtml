@@ -2,7 +2,17 @@
 
 <ul>
 <% for detail in @journal.details %>
+<% if detail.prop_key == "fixed_version_id"
+  version = Version.find_by_id(detail.value)
+  old_version = Version.find_by_id(detail.old_value)
+end %>
+
+<% if detail.prop_key == "fixed_version_id" && !recipients_all_allowed_to_see_versions?(@recipients + @cc, [version, old_version])
+%>
+    <li><%= l(:field_fixed_version) %> <%= l(:text_journal_set_to, l(:text_not_authorized)) %></li>
+    <% else %>
     <li><%= show_detail(detail, true) %></li>
+    <% end %>
 <% end %>
 </ul>
 

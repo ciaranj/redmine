@@ -238,4 +238,23 @@ class MailerTest < Test::Unit::TestCase
     assert mail.bcc.include?('dlopper@somenet.foo')
     assert mail.body.include?('Bug #3: Error 281 when updating a recipe')
   end
+
+  def test_issue_edit_should_not_show_private_version_changes_if_any_recipients_are_unauthorized
+    Setting.default_language = 'en'
+    # Move issue to a public project but with a Journal showing a
+    # Private Version
+    issue = Issue.find(6)
+    issue.update_attribute(:project_id, 1)
+
+    # User is allowed to see the Private Version
+    User.current = User.find(1)
+    # but another Member of Project #1 is not (dlopper@somenet.foo)
+
+    journal = Journal.find(4)
+    Mailer.deliver_issue_edit(journal)
+    mail = ActionMailer::Base.deliveries.last
+    
+    assert !mail.body.include?('Private Version of public subproject'), "Private version exposed to unauthorized user"
+    assert mail.body.include?('You are not authorized to view this.'), "Unauthorized message not displayed"
+  end
 end
