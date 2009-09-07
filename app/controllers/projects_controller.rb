@@ -241,7 +241,7 @@ class ProjectsController < ApplicationController
                 
     @containers = [ Project.find(@project.id, :include => :attachments, :order => sort_clause)]
     # Need get the ids separately in order to add the finder options
-    version_ids = @project.inherited_versions_visible_to_user.collect(&:id)
+    version_ids = @project.shared_versions_visible_to_user.collect(&:id)
     @containers += Version.find_all_by_id(version_ids, :include => :attachments, :order => sort_clause).sort.reverse
     render :layout => !request.xhr?
   end
@@ -250,8 +250,8 @@ class ProjectsController < ApplicationController
   def changelog
     @trackers = @project.trackers.find(:all, :conditions => ["is_in_chlog=?", true], :order => 'position')
     retrieve_selected_tracker_ids(@trackers)    
-    if params[:inherited_versions]
-      @versions = @project.inherited_versions_visible_to_user.sort
+    if params[:shared_versions]
+      @versions = @project.shared_versions_visible_to_user.sort
     else
       @versions = @project.versions.sort
     end
@@ -260,8 +260,8 @@ class ProjectsController < ApplicationController
   def roadmap
     @trackers = @project.trackers.find(:all, :conditions => ["is_in_roadmap=?", true])
     retrieve_selected_tracker_ids(@trackers)
-    if params[:inherited_versions]
-      @versions = @project.inherited_versions_visible_to_user.sort
+    if params[:shared_versions]
+      @versions = @project.shared_versions_visible_to_user.sort
     else
       @versions = @project.versions.sort
     end

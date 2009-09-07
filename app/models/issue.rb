@@ -100,7 +100,7 @@ class Issue < ActiveRecord::Base
         new_category = issue.category.nil? ? nil : new_project.issue_categories.find_by_name(issue.category.name)
         issue.category = new_category
         # Keep the fixed_version if it's still valid in the new_project
-        unless new_project.inherited_versions.include?(issue.fixed_version)
+        unless new_project.shared_versions.include?(issue.fixed_version)
           issue.fixed_version = nil
         end
         issue.project = new_project
@@ -297,7 +297,7 @@ class Issue < ActiveRecord::Base
               :include => [:project, :fixed_version]
               ).each do |issue|
       next if issue.project.nil? || issue.fixed_version.nil?
-      unless issue.project.inherited_versions.include?(issue.fixed_version)
+      unless issue.project.shared_versions.include?(issue.fixed_version)
         issue.init_journal(User.current)
         issue.fixed_version = nil
         issue.save

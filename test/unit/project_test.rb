@@ -265,7 +265,7 @@ class ProjectTest < Test::Unit::TestCase
     assert_equal [1,2], parent.rolled_up_trackers.collect(&:id)
   end
 
-  def test_inherited_versions
+  def test_shared_versions
     parent = Project.find(1)
     child = parent.children.find(3)
     private_child = parent.children.find(5)
@@ -275,15 +275,15 @@ class ProjectTest < Test::Unit::TestCase
     assert_equal [6], private_child.version_ids
     assert_equal [7], Version.find_all_by_shared('system').collect(&:id)
 
-    assert_equal 6, parent.inherited_versions.size
-    parent.inherited_versions.each do |version|
+    assert_equal 6, parent.shared_versions.size
+    parent.shared_versions.each do |version|
       assert_kind_of Version, version
     end
 
-    assert_equal [1,2,3,4,6,7], parent.inherited_versions.collect(&:id).sort
+    assert_equal [1,2,3,4,6,7], parent.shared_versions.collect(&:id).sort
   end
 
-  def test_inherited_versions_should_ignore_archived_subprojects
+  def test_shared_versions_should_ignore_archived_subprojects
     parent = Project.find(1)
     child = parent.children.find(3)
     child.archive
@@ -291,10 +291,10 @@ class ProjectTest < Test::Unit::TestCase
     
     assert_equal [1,2,3], parent.version_ids.sort
     assert_equal [4], child.version_ids
-    assert !parent.inherited_versions.collect(&:id).include?(4)
+    assert !parent.shared_versions.collect(&:id).include?(4)
   end
 
-  def test_inherited_versions_visible_to_user
+  def test_shared_versions_visible_to_user
     user = User.find(3)
     parent = Project.find(1)
     child = parent.children.find(5)
@@ -302,7 +302,7 @@ class ProjectTest < Test::Unit::TestCase
     assert_equal [1,2,3], parent.version_ids.sort
     assert_equal [6], child.version_ids
 
-    versions = parent.inherited_versions_visible_to_user(user)
+    versions = parent.shared_versions_visible_to_user(user)
     
     assert_equal 4, versions.size
     versions.each do |version|

@@ -34,7 +34,7 @@
 <% end %>
 <%= content_tag('p', f.select(:fixed_version_id, 
                               (inherited_version_options(@project)),
-                              { :include_blank => true })) unless @project.inherited_versions.empty? %>
+                              { :include_blank => true })) unless @project.shared_versions.empty? %>
 </div>
 
 <div class="splitcontentright">

@@ -251,23 +251,23 @@ class Project < ActiveRecord::Base
 
   # Returns an array of the Versions used by the project, its active
   # sub projects, and its active parent projects
-  def inherited_versions
-    unless @inherited_versions
-      @inherited_versions = Version.systemwide_versions
-      @inherited_versions += Version.hierarchy_versions(active_projects_in_hierarchy.collect(&:id))
-      @inherited_versions += versions
+  def shared_versions
+    unless @shared_versions
+      @shared_versions = Version.systemwide_versions
+      @shared_versions += Version.hierarchy_versions(active_projects_in_hierarchy.collect(&:id))
+      @shared_versions += versions
 
-      @inherited_versions.uniq!
-      @inherited_versions.sort!
+      @shared_versions.uniq!
+      @shared_versions.sort!
     end
 
-    yield @inherited_versions if block_given?
-    @inherited_versions
+    yield @shared_versions if block_given?
+    @shared_versions
   end
 
-  # Returns the inherited_versions that are visible to +user+
-  def inherited_versions_visible_to_user(user=User.current)
-    return inherited_versions do |versions|
+  # Returns the shared_versions that are visible to +user+
+  def shared_versions_visible_to_user(user=User.current)
+    return shared_versions do |versions|
       versions.delete_if {|v| !user.allowed_to?(:view_issues, v.project) }
     end
   end

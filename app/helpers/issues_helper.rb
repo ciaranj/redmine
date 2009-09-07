@@ -67,7 +67,7 @@ module IssuesHelper
   end
 
   def inherited_version_options(project)
-    project.inherited_versions.sort.collect {|v| [format_version_name(v), v.id] }
+    project.shared_versions.sort.collect {|v| [format_version_name(v), v.id] }
   end
 
   def show_detail(detail, no_html=false)

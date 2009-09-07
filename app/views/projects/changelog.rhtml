@@ -33,7 +33,7 @@
   <%= tracker.name %></label><br />
 <% end %>
 <br />
-<label for="inherited_versions"><%= check_box_tag "inherited_versions", 1, params[:inherited_versions] %> <%= l(:label_show_inherited_versions) %></label>
+<label for="shared_versions"><%= check_box_tag "shared_versions", 1, params[:shared_versions] %> <%= l(:label_show_shared_versions) %></label>
 <p><%= submit_tag l(:button_apply), :class => 'button-small' %></p>
 <% end %>
 

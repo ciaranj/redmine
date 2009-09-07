@@ -316,7 +316,7 @@ class ProjectsControllerTest < Test::Unit::TestCase
                    :attributes => { :href => '/attachments/download/9/version_file.zip' }
   end
 
-  def test_list_files_with_inherited_versions
+  def test_list_files_with_shared_versions
     get :list_files, :id => 1
     assert_response :success
     assert_not_nil assigns(:containers)
@@ -347,8 +347,8 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert_not_nil assigns(:versions)
   end
   
-  def test_changelog_showing_inherited_versions
-    get :changelog, :id => 1, :inherited_versions => 1
+  def test_changelog_showing_shared_versions
+    get :changelog, :id => 1, :shared_versions => 1
     assert_response :success
     assert_template 'changelog'
     assert_not_nil assigns(:versions)
@@ -385,8 +385,8 @@ class ProjectsControllerTest < Test::Unit::TestCase
     assert assigns(:versions).include?(Version.find(1))
   end
 
-  def test_roadmap_showing_inherited_versions
-    get :roadmap, :id => 1, :inherited_versions => 1
+  def test_roadmap_showing_shared_versions
+    get :roadmap, :id => 1, :shared_versions => 1
     assert_response :success
     assert_template 'roadmap'
     assert_not_nil assigns(:versions)

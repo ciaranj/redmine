@@ -32,7 +32,7 @@ class QueryTest < Test::Unit::TestCase
       :conditions => query.statement
   end
 
-  def test_query_should_allow_inherited_versions_for_a_project_query
+  def test_query_should_allow_shared_versions_for_a_project_query
     subproject_version = Version.find(4)
     query = Query.new(:project => Project.find(1), :name => '_')
     query.add_filter('fixed_version_id', '=', [subproject_version.id.to_s])
