@@ -685,6 +685,9 @@ en:
   label_date_from_to: From {{start}} to {{end}}
   label_wiki_content_added: Wiki page added
   label_wiki_content_updated: Wiki page updated
+  label_version_shared_none: None
+  label_version_shared_hierarchy: "Parent and child projects"
+  label_version_shared_systemwide: "Systemwide"
   
   button_login: Login
   button_submit: Submit

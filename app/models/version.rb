@@ -17,9 +17,9 @@
 
 class Version < ActiveRecord::Base
   SharedValues = {
-    "none" => "None",
-    "hierarchy" => "Parent and child projects",
-    "system" => "Systemwide"
+    "none" => :label_version_shared_none,
+    "hierarchy" => :label_version_shared_hierarchy,
+    "system" => :label_version_shared_systemwide
   }
 
   before_destroy :check_integrity

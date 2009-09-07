@@ -105,6 +105,14 @@ module ApplicationHelper
     end
   end
 
+  def format_version_sharing_name(version)
+    if version.shared && Version::SharedValues.key?(version.shared)
+      l(Version::SharedValues[version.shared])
+    else
+      l(:label_version_shared_none)
+    end
+  end
+
   # Given an Array of emails (+recipients+), do they all have
   # +permission+ on +project+ ?
   def recipients_all_allowed_to?(recipients, permission, project)
