@@ -66,7 +66,7 @@ module IssuesHelper
     @sidebar_queries
   end
 
-  def inherited_version_options(project)
+  def shared_version_options(project)
     project.shared_versions.sort.collect {|v| [format_version_name(v), v.id] }
   end
 

@@ -27,7 +27,7 @@
 <label><%= l(:field_fixed_version) %>: 
 <%= select_tag('fixed_version_id', content_tag('option', l(:label_no_change_option), :value => '') +
                                    content_tag('option', l(:label_none), :value => 'none') +
-                                   options_for_select(inherited_version_options(@project))) %></label>
+                                   options_for_select(shared_version_options(@project))) %></label>
 </p>
 
 <p>
