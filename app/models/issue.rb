@@ -99,7 +99,10 @@ class Issue < ActiveRecord::Base
         # reassign to the category with same name if any
         new_category = issue.category.nil? ? nil : new_project.issue_categories.find_by_name(issue.category.name)
         issue.category = new_category
-        issue.fixed_version = nil
+        # Keep the fixed_version if it's still valid in the new_project
+        unless new_project.inherited_versions.include?(issue.fixed_version)
+          issue.fixed_version = nil
+        end
         issue.project = new_project
       end
       if new_tracker
