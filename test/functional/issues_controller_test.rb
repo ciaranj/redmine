@@ -42,7 +42,8 @@ class IssuesControllerTest < Test::Unit::TestCase
            :custom_fields_trackers,
            :time_entries,
            :journals,
-           :journal_details
+           :journal_details,
+           :queries
   
   def setup
     @controller = IssuesController.new
