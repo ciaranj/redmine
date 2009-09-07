@@ -287,6 +287,23 @@ class Issue < ActiveRecord::Base
     s << ' assigned-to-me' if User.current.logged? && assigned_to_id == User.current.id
     s
   end
+
+  # Update all issues so their versions are not pointing to a
+  # fixed_version that is outside of the issue's project hierarchy.
+  #
+  # OPTIMIZE: does a full table scan of Issues with a fixed_version.
+  def self.update_fixed_versions_from_project_hierarchy_change
+    Issue.all(:conditions => ['fixed_version_id IS NOT NULL'],
+              :include => [:project, :fixed_version]
+              ).each do |issue|
+      next if issue.project.nil? || issue.fixed_version.nil?
+      unless issue.project.inherited_versions.include?(issue.fixed_version)
+        issue.init_journal(User.current)
+        issue.fixed_version = nil
+        issue.save
+      end
+    end
+  end
   
   private
   

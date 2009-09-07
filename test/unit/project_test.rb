@@ -154,6 +154,37 @@ class ProjectTest < Test::Unit::TestCase
     assert_equal 4, parent.children.size
     assert_equal parent.children.sort_by(&:name), parent.children
   end
+
+  def test_set_parent_should_update_issue_fixed_version_associations_when_a_fixed_version_is_moved_out_of_the_hierarchy
+    # Parent issue with a hierarchy project's fixed version
+    parent_issue = Issue.find(1)
+    parent_issue.update_attribute(:fixed_version_id, 4)
+    parent_issue.reload
+    assert_equal 4, parent_issue.fixed_version_id
+
+    # Should keep fixed versions for the issues
+    issue_with_local_fixed_version = Issue.find(5)
+    issue_with_local_fixed_version.update_attribute(:fixed_version_id, 4)
+    issue_with_local_fixed_version.reload
+    assert_equal 4, issue_with_local_fixed_version.fixed_version_id
+
+    # Local issue with hierarchy fixed_version
+    issue_with_hierarchy_fixed_version = Issue.find(11)
+    issue_with_hierarchy_fixed_version.update_attribute(:fixed_version_id, 6)
+    issue_with_hierarchy_fixed_version.reload
+    assert_equal 6, issue_with_hierarchy_fixed_version.fixed_version_id
+    
+    # Move project out of the issue's hierarchy
+    moved_project = Project.find(3)
+    moved_project.set_parent!(Project.find(2))
+    parent_issue.reload
+    issue_with_local_fixed_version.reload
+    issue_with_hierarchy_fixed_version.reload
+    
+    assert_equal 4, issue_with_local_fixed_version.fixed_version_id, "Fixed version was not keep on an issue local to the moved project"
+    assert_equal nil, issue_with_hierarchy_fixed_version.fixed_version_id, "Fixed version is still set after moving the Project out of the hierarchy where the version is defined in"
+    assert_equal nil, parent_issue.fixed_version_id, "Fixed version is still set after moving the Version out of the hierarchy for the issue."
+  end
   
   def test_rebuild_should_sort_children_alphabetically
     ProjectCustomField.delete_all
