@@ -16,6 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class Version < ActiveRecord::Base
+  SharedValues = {
+    "none" => "None",
+    "hierarchy" => "Parent and child projects",
+    "system" => "Systemwide"
+  }
+
   before_destroy :check_integrity
   belongs_to :project
   has_many :fixed_issues, :class_name => 'Issue', :foreign_key => 'fixed_version_id'
@@ -26,6 +32,18 @@ class Version < ActiveRecord::Base
   validates_uniqueness_of :name, :scope => [:project_id]
   validates_length_of :name, :maximum => 60
   validates_format_of :effective_date, :with => /^\d{4}-\d{2}-\d{2}$/, :message => :not_a_date, :allow_nil => true
+
+  named_scope :systemwide_versions, :conditions => ["#{Version.table_name}.shared = ?", 'system' ]
+  named_scope :hierarchy_versions, lambda {|project_ids|
+    {
+      :conditions => ["#{Version.table_name}.shared = ? AND #{Version.table_name}.project_id IN (?)",
+                      'hierarchy', project_ids]
+    }
+  }
+
+  def systemwide?
+    shared == 'system'
+  end
   
   def start_date
     effective_date

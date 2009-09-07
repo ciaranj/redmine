@@ -251,11 +251,14 @@ class Project < ActiveRecord::Base
   # Returns an array of the Versions used by the project, its active
   # sub projects, and its active parent projects
   def inherited_versions
-    @inherited_versions ||= self.root.self_and_descendants.
-      delete_if {|p| !p.active? }.
-      collect(&:versions).
-      flatten.
-      sort
+    unless @inherited_versions
+      @inherited_versions = Version.systemwide_versions
+      @inherited_versions += Version.hierarchy_versions(active_projects_in_hierarchy.collect(&:id))
+      @inherited_versions += versions
+
+      @inherited_versions.uniq!
+      @inherited_versions.sort!
+    end
 
     yield @inherited_versions if block_given?
     @inherited_versions
@@ -267,7 +270,7 @@ class Project < ActiveRecord::Base
       versions.delete_if {|v| !user.allowed_to?(:view_issues, v.project) }
     end
   end
-  
+
   # Returns a hash of project users grouped by role
   def users_by_role
     members.find(:all, :include => [:user, :roles]).inject({}) do |h, m|
@@ -425,5 +428,9 @@ private
 
   def allowed_actions
     @actions_allowed ||= allowed_permissions.inject([]) { |actions, permission| actions += Redmine::AccessControl.allowed_actions(permission) }.flatten
+  end
+
+  def active_projects_in_hierarchy
+    self.root.self_and_descendants.delete_if {|p| !p.active? }
   end
 end

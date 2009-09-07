@@ -98,7 +98,7 @@ module ApplicationHelper
   end
 
   def format_version_name(version)
-    if User.current.allowed_to?(:view_issues, version.project)
+    if User.current.allowed_to?(:view_issues, version.project) || version.systemwide?
       "#{h(version.project.name)} - #{h(version.name)}"
     else
       "#{l(:text_not_authorized)}"
