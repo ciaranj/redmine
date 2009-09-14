@@ -5,7 +5,7 @@ module SvgWeb
   end
   
   def svg_tag(url, options = {})
-    url = compute_public_path(url, "svgs", "svg")
+    url = compute_public_path(url, "svgs")
     page = "<!--[if IE]>\n"
     page << content_tag( :object, nil, {:src => url, :classid => "image/svg+xml"}.merge(options) )
     page << "\n<![endif]--><!--[if !IE]>-->\n"
