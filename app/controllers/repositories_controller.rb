@@ -241,6 +241,7 @@ private
       :step_x_labels => 2,
       :show_data_values => false,
       :graph_title => l(:label_commits_per_month),
+      :no_css => true,
       :show_graph_title => true
     )
     
@@ -284,6 +285,7 @@ private
       :show_data_values => false,
       :rotate_y_labels => false,
       :graph_title => l(:label_commits_per_author),
+      :no_css => true,
       :show_graph_title => true
     )
     
