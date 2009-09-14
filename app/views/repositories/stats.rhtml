@@ -1,10 +1,10 @@
 <h2><%= l(:label_statistics) %></h2>
 
 <p>
-<%= tag("embed", :width => 800, :height => 300, :type => "image/svg+xml", :src => url_for(:controller => 'repositories', :action => 'graph', :id => @project, :graph => "commits_per_month")) %>
+<%= svg_tag( url_for(:controller => 'repositories', :action => 'graph', :id => @project, :graph => "commits_per_month"), :id => "cpm_chart", :width => 800, :height => 300) %>
 </p>
 <p>
-<%= tag("embed", :width => 800, :height => 400, :type => "image/svg+xml", :src => url_for(:controller => 'repositories', :action => 'graph', :id => @project, :graph => "commits_per_author")) %>
+<%= svg_tag( url_for(:controller => 'repositories', :action => 'graph', :id => @project, :graph => "commits_per_author"), :id => "cpa_chart", :width => 800, :height => 400) %>
 </p>
 
 <p><%= link_to l(:button_back), :action => 'show', :id => @project %></p>
