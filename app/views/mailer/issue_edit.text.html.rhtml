@@ -2,7 +2,11 @@
 
 <ul>
 <% for detail in @journal.details %>
+<% if unauthorized_version?(detail, @recipients + @cc) %>
+    <li><%= l(:field_fixed_version) %> <%= l(:text_journal_set_to, l(:text_not_authorized)) %></li>
+    <% else %>
     <li><%= show_detail(detail, true) %></li>
+    <% end %>
 <% end %>
 </ul>
 

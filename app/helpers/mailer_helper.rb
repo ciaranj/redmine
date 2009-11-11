@@ -1,5 +1,5 @@
 # redMine - project management software
-# Copyright (C) 2006-2008  Jean-Philippe Lang
+# Copyright (C) 2006-2009  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,24 +15,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-require File.dirname(__FILE__) + '/../test_helper'
+module MailerHelper
+  def unauthorized_version?(journal_detail, recipients)
+    return false unless journal_detail.prop_key == "fixed_version_id"
 
-class IssuePriorityTest < ActiveSupport::TestCase
-  fixtures :enumerations, :issues
-
-  def test_should_be_an_enumeration
-    assert IssuePriority.ancestors.include?(Enumeration)
-  end
-  
-  def test_objects_count
-    # low priority
-    assert_equal 6, IssuePriority.find(4).objects_count
-    # urgent
-    assert_equal 0, IssuePriority.find(7).objects_count
-  end
-
-  def test_option_name
-    assert_equal :enumeration_issue_priorities, IssuePriority.new.option_name
+    !recipients_all_allowed_to_see_versions?(recipients,
+                                             Version.find_all_by_id([journal_detail.value, journal_detail.old_value]))
   end
 end
-

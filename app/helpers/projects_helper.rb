@@ -18,7 +18,11 @@
 module ProjectsHelper
   def link_to_version(version, options = {})
     return '' unless version && version.is_a?(Version)
-    link_to h(version.name), { :controller => 'versions', :action => 'show', :id => version }, options
+    if User.current.allowed_to?(:view_issues, version.project)
+      link_to format_version_name(version), { :controller => 'versions', :action => 'show', :id => version }, options
+    else
+      format_version_name(version)
+    end
   end
   
   def project_settings_tabs

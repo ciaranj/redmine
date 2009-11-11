@@ -6,7 +6,7 @@
 <div id="roadmap">
 <% @versions.each do |version| %>   
     <%= tag 'a', :name => version.name %>
-    <h3 class="icon22 icon22-package"><%= link_to h(version.name), :controller => 'versions', :action => 'show', :id => version %></h3>
+    <h3 class="icon22 icon22-package"><%= link_to h(version.project.name) + " - " + h(version.name), :controller => 'versions', :action => 'show', :id => version %></h3>
     <%= render :partial => 'versions/overview', :locals => {:version => version} %>
     <%= render(:partial => "wiki/content", :locals => {:content => version.wiki_page.content}) if version.wiki_page %>
 
@@ -39,6 +39,8 @@
 <% end %>
 <br />
 <label for="completed"><%= check_box_tag "completed", 1, params[:completed] %> <%= l(:label_show_completed_versions) %></label>
+<br />
+<label for="shared_versions"><%= check_box_tag "shared_versions", 1, params[:shared_versions] %> <%= l(:label_show_shared_versions) %></label>
 <p><%= submit_tag l(:button_apply), :class => 'button-small', :name => nil %></p>
 <% end %>
 

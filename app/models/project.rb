@@ -288,6 +288,7 @@ class Project < ActiveRecord::Base
         # move_to_child_of adds the project in last (ie.right) position
         move_to_child_of(p)
       end
+      Issue.update_fixed_versions_from_project_hierarchy_change
       true
     else
       # Can not move to the given target
@@ -315,6 +316,53 @@ class Project < ActiveRecord::Base
     end
   end
   
+
+  # Returns an array of the Versions used by the project, its active
+  # sub projects, and its active parent projects
+  def shared_versions
+    unless @shared_versions
+      @shared_versions = Version.systemwide_versions
+      @shared_versions += Version.hierarchy_versions(active_projects_in_hierarchy.collect(&:id))
+      @shared_versions += versions
+
+      @shared_versions.uniq!
+      @shared_versions.sort!
+    end
+
+    yield @shared_versions if block_given?
+    @shared_versions
+  end
+
+  # Returns the shared_versions that are visible to +user+
+  def shared_versions_visible_to_user(user=User.current)
+    return shared_versions do |versions|
+      versions.delete_if {|v| !user.allowed_to?(:view_issues, v.project) }
+    end
+  end
+  
+  # Returns an array of the open Versions used by the project, its active
+  # sub projects, and its active parent projects
+  def open_shared_versions
+    unless @open_shared_versions
+      @open_shared_versions = Version.open_systemwide_versions
+      @open_shared_versions += Version.open_hierarchy_versions(active_projects_in_hierarchy.collect(&:id))
+      @open_shared_versions += versions.open
+
+      @open_shared_versions.uniq!
+      @open_shared_versions.sort!
+    end
+
+    yield @open_shared_versions if block_given?
+    @open_shared_versions
+  end
+  
+  # Returns the shared_versions that are visible to +user+
+  def open_shared_versions_visible_to_user(user=User.current)
+    return open_shared_versions do |versions|
+      versions.delete_if {|v| !user.allowed_to?(:view_issues, v.project) }
+    end
+  end
+
   # Returns a hash of project users grouped by role
   def users_by_role
     members.find(:all, :include => [:user, :roles]).inject({}) do |h, m|
@@ -590,5 +638,9 @@ class Project < ActiveRecord::Base
              :conditions => ["id NOT IN (?)", self.time_entry_activities.active.collect(&:parent_id)]) +
         self.time_entry_activities.active
     end
+  end
+  
+  def active_projects_in_hierarchy
+    self.root.self_and_descendants.delete_if {|p| !p.active? }
   end
 end

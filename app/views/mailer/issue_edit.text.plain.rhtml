@@ -1,7 +1,11 @@
 <%= l(:text_issue_updated, :id => "##{@issue.id}", :author => @journal.user) %>
 
 <% for detail in @journal.details -%>
+<% if unauthorized_version?(detail, @recipients + @cc) %>
+<%= l(:field_fixed_version) %> <%= l(:text_journal_set_to, l(:text_not_authorized)) %>
+<% else %>
 <%= show_detail(detail, true) %>
+<% end %>
 <% end -%>
 
 <%= @journal.notes if @journal.notes? %>

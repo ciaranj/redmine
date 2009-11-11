@@ -262,7 +262,9 @@ class ProjectsController < ApplicationController
                 'downloads' => "#{Attachment.table_name}.downloads"
                 
     @containers = [ Project.find(@project.id, :include => :attachments, :order => sort_clause)]
-    @containers += @project.versions.find(:all, :include => :attachments, :order => sort_clause).sort.reverse
+    # Need get the ids separately in order to add the finder options
+    version_ids = @project.shared_versions_visible_to_user.collect(&:id)
+    @containers += Version.find_all_by_id(version_ids, :include => :attachments, :order => sort_clause).sort.reverse
     render :layout => !request.xhr?
   end
   
@@ -270,13 +272,21 @@ class ProjectsController < ApplicationController
   def changelog
     @trackers = @project.trackers.find(:all, :conditions => ["is_in_chlog=?", true], :order => 'position')
     retrieve_selected_tracker_ids(@trackers)    
-    @versions = @project.versions.sort
+    if params[:shared_versions]
+      @versions = @project.shared_versions_visible_to_user.sort
+    else
+      @versions = @project.versions.sort
+    end
   end
 
   def roadmap
     @trackers = @project.trackers.find(:all, :conditions => ["is_in_roadmap=?", true])
     retrieve_selected_tracker_ids(@trackers)
-    @versions = @project.versions.sort
+    if params[:shared_versions]
+      @versions = @project.shared_versions_visible_to_user.sort
+    else
+      @versions = @project.versions.sort
+    end
     @versions = @versions.select {|v| !v.completed? } unless params[:completed]
   end
   

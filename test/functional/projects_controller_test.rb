@@ -326,6 +326,16 @@ class ProjectsControllerTest < ActionController::TestCase
                    :attributes => { :href => '/attachments/download/9/version_file.zip' }
   end
 
+  def test_list_files_with_shared_versions
+    get :list_files, :id => 1
+    assert_response :success
+    assert_not_nil assigns(:containers)
+    
+    # file attached to a subproject's version
+    assert_tag :a, :content => 'version_file.zip',
+                   :attributes => { :href => '/attachments/download/11/version_file.zip' }
+  end
+
   def test_list_files_routing
     assert_routing(
       {:method => :get, :path => '/projects/33/files'},
@@ -347,6 +357,15 @@ class ProjectsControllerTest < ActionController::TestCase
     assert_not_nil assigns(:versions)
   end
   
+  def test_changelog_showing_shared_versions
+    get :changelog, :id => 1, :shared_versions => 1
+    assert_response :success
+    assert_template 'changelog'
+    assert_not_nil assigns(:versions)
+    # Version on subproject appears
+    assert assigns(:versions).include?(Version.find(4))
+  end
+
   def test_roadmap_routing
     assert_routing(
       {:method => :get, :path => 'projects/33/roadmap'},
@@ -374,6 +393,15 @@ class ProjectsControllerTest < ActionController::TestCase
     assert assigns(:versions).include?(Version.find(3))
     # Completed version appears
     assert assigns(:versions).include?(Version.find(1))
+  end
+
+  def test_roadmap_showing_shared_versions
+    get :roadmap, :id => 1, :shared_versions => 1
+    assert_response :success
+    assert_template 'roadmap'
+    assert_not_nil assigns(:versions)
+    # Version on subproject appears
+    assert assigns(:versions).include?(Version.find(4))
   end
   
   def test_project_activity_routing

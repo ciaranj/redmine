@@ -101,6 +101,43 @@ module ApplicationHelper
     h(truncate(text.to_s, :length => 120).gsub(%r{[\r\n]*<(pre|code)>.*$}m, '...')).gsub(/[\r\n]+/, "<br />")
   end
 
+  def format_version_name(version)
+    if User.current.allowed_to?(:view_issues, version.project) || version.systemwide?
+      "#{h(version.project.name)} - #{h(version.name)}"
+    else
+      "#{l(:text_not_authorized)}"
+    end
+  end
+
+  def format_version_sharing_name(version)
+    if version.shared && Version::SharedValues.key?(version.shared)
+      l(Version::SharedValues[version.shared])
+    else
+      l(:label_version_shared_none)
+    end
+  end
+
+  # Given an Array of emails (+recipients+), do they all have
+  # +permission+ on +project+ ?
+  def recipients_all_allowed_to?(recipients, permission, project)
+    recipients.uniq.all? do |recipient|
+      user = User.find_by_mail(recipient)
+      user && user.allowed_to?(permission, project)
+    end
+  end
+
+  # Given an Array of +versions+, are all the email addresses
+  # (+recipients+) allowed to view all of the versions?
+  def recipients_all_allowed_to_see_versions?(recipients, versions)
+    versions.uniq.all? do |version|
+      if version.nil?
+        true
+      else
+        recipients_all_allowed_to?(recipients, :view_issues, version.project)
+      end
+    end
+  end
+  
   def due_date_distance_in_words(date)
     if date
       l((date < Date.today ? :label_roadmap_overdue : :label_roadmap_due_in), distance_of_date_in_words(Date.today, date))

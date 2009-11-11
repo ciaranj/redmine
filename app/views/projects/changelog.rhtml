@@ -32,6 +32,8 @@
   <label><%= check_box_tag "tracker_ids[]", tracker.id, (@selected_tracker_ids.include? tracker.id.to_s) %>
   <%= tracker.name %></label><br />
 <% end %>
+<br />
+<label for="shared_versions"><%= check_box_tag "shared_versions", 1, params[:shared_versions] %> <%= l(:label_show_shared_versions) %></label>
 <p><%= submit_tag l(:button_apply), :class => 'button-small' %></p>
 <% end %>
 

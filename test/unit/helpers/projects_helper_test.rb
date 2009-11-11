@@ -1,5 +1,5 @@
-# redMine - project management software
-# Copyright (C) 2006-2008  Jean-Philippe Lang
+# Redmine - project management software
+# Copyright (C) 2006-2009  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,24 +15,30 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-require File.dirname(__FILE__) + '/../test_helper'
+require File.dirname(__FILE__) + '/../../test_helper'
 
-class IssuePriorityTest < ActiveSupport::TestCase
-  fixtures :enumerations, :issues
-
-  def test_should_be_an_enumeration
-    assert IssuePriority.ancestors.include?(Enumeration)
-  end
+class ProjectsHelperTest < HelperTestCase
+  include ApplicationHelper
+  include ProjectsHelper
   
-  def test_objects_count
-    # low priority
-    assert_equal 6, IssuePriority.find(4).objects_count
-    # urgent
-    assert_equal 0, IssuePriority.find(7).objects_count
+  fixtures :all
+
+  def setup
+    super
+    set_language_if_valid('en')
   end
 
-  def test_option_name
-    assert_equal :enumeration_issue_priorities, IssuePriority.new.option_name
+  def test_link_to_version
+    User.current = User.find(1)
+    assert_equal '<a href="/versions/show/1">eCookbook - 0.1</a>', link_to_version(Version.find(1))
+  end
+
+  def test_link_to_version_invalid_version
+    assert_equal '', link_to_version(Object)
+  end
+
+  def test_link_to_version_unauthorized
+    User.current = User.find(3)
+    assert_equal "You are not authorized to view this.", link_to_version(Version.find(5))
   end
 end
-
