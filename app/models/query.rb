@@ -114,6 +114,7 @@ class Query < ActiveRecord::Base
     QueryColumn.new(:estimated_hours, :sortable => "#{Issue.table_name}.estimated_hours"),
     QueryColumn.new(:done_ratio, :sortable => "#{Issue.table_name}.done_ratio", :groupable => true),
     QueryColumn.new(:created_on, :sortable => "#{Issue.table_name}.created_on", :default_order => 'desc'),
+    QueryColumn.new(:description, :sortable => "#{Issue.table_name}.description"),
   ]
   cattr_reader :available_columns
   
@@ -159,7 +160,8 @@ class Query < ActiveRecord::Base
                            "start_date" => { :type => :date, :order => 11 },
                            "due_date" => { :type => :date, :order => 12 },
                            "estimated_hours" => { :type => :integer, :order => 13 },
-                           "done_ratio" =>  { :type => :integer, :order => 14 }}
+                           "done_ratio" =>  { :type => :integer, :order => 14 },
+                            "description" =>  { :type => :text, :order => 15 }}
     
     user_values = []
     user_values << ["<< #{l(:label_me)} >>", "me"] if User.current.logged?
