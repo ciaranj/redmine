@@ -81,6 +81,15 @@ class Version < ActiveRecord::Base
     @closed_issues_count ||= Issue.count(:all, :conditions => ["fixed_version_id = ? AND is_closed = ?", self.id, true], :include => :status)
   end
   
+  def issues_count_against_project(project, include_subprojects=false)
+    if include_children
+      project.self_and_descendants.collect {|proj| proj.id}
+    else
+      project_ids= [project.id]
+    end
+    print "**** #{project_ids.join(',')}"
+  end
+  
   def wiki_page
     if project.wiki && !wiki_page_title.blank?
       @wiki_page ||= project.wiki.find_page(wiki_page_title)
