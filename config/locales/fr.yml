@@ -334,6 +334,7 @@ fr:
   setting_openid: "Autoriser l'authentification et l'enregistrement OpenID"
   setting_password_min_length: Longueur minimum des mots de passe
   setting_new_project_user_role_id: Rôle donné à un utilisateur non-administrateur qui crée un projet
+  setting_default_projects_modules: Modules activés par défaut pour les nouveaux projets
   
   permission_add_project: Créer un projet
   permission_edit_project: Modifier le projet
@@ -398,6 +399,7 @@ fr:
   label_user: Utilisateur
   label_user_plural: Utilisateurs
   label_user_new: Nouvel utilisateur
+  label_user_anonymous: Anonyme
   label_project: Projet
   label_project_new: Nouveau projet
   label_project_plural: Projets
@@ -744,6 +746,7 @@ fr:
   button_list: Lister
   button_view: Voir
   button_move: Déplacer
+  button_move_and_follow: Déplacer et suivre
   button_back: Retour
   button_cancel: Annuler
   button_activate: Activer
@@ -860,3 +863,4 @@ fr:
   text_journal_added: "{{label}} {{value}} ajouté"
   field_active: Actif
   enumeration_system_activity: Activité système
+  setting_gravatar_default: Default Gravatar image

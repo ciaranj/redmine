@@ -26,6 +26,7 @@ class ProjectTest < ActiveSupport::TestCase
   def setup
     @ecookbook = Project.find(1)
     @ecookbook_sub1 = Project.find(3)
+    User.current = nil
   end
   
   should_validate_presence_of :name
@@ -236,6 +237,14 @@ class ProjectTest < ActiveSupport::TestCase
     assert_equal [5, 6, 3, 4], d.collect(&:id)
   end
   
+  def test_allowed_parents_should_be_empty_for_non_member_user
+    Role.non_member.add_permission!(:add_project)
+    user = User.find(9)
+    assert user.memberships.empty?
+    User.current = user
+    assert Project.new.allowed_parents.empty?
+  end
+  
   def test_users_by_role
     users_by_role = Project.find(1).users_by_role
     assert_kind_of Hash, users_by_role
@@ -397,6 +406,11 @@ class ProjectTest < ActiveSupport::TestCase
     end
 
     should "copy issues" do
+      @source_project.issues << Issue.generate!(:status_id => 5,
+                                                :subject => "copy issue status",
+                                                :tracker_id => 1,
+                                                :assigned_to_id => 2,
+                                                :project_id => @source_project.id)
       assert @project.valid?
       assert @project.issues.empty?
       assert @project.copy(@source_project)
@@ -407,6 +421,11 @@ class ProjectTest < ActiveSupport::TestCase
         assert ! issue.assigned_to.blank?
         assert_equal @project, issue.project
       end
+      
+      copied_issue = @project.issues.first(:conditions => {:subject => "copy issue status"})
+      assert copied_issue
+      assert copied_issue.status
+      assert_equal "Closed", copied_issue.status.name
     end
 
     should "change the new issues to use the copied version" do

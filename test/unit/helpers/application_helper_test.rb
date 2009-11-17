@@ -150,7 +150,7 @@ RAW
   
   def test_redmine_links
     issue_link = link_to('#3', {:controller => 'issues', :action => 'show', :id => 3}, 
-                               :class => 'issue', :title => 'Error 281 when updating a recipe (New)')
+                               :class => 'issue status-1 priority-1 overdue', :title => 'Error 281 when updating a recipe (New)')
     
     changeset_link = link_to('r1', {:controller => 'repositories', :action => 'revision', :id => 'ecookbook', :rev => 1},
                                    :class => 'changeset', :title => 'My very first commit')
@@ -271,6 +271,28 @@ RAW
       "<notextile>this is <tag>a tag</tag></notextile>" => "this is &lt;tag&gt;a tag&lt;/tag&gt;"
     }
     to_test.each { |text, result| assert_equal result, textilizable(text) }
+  end
+  
+  def test_pre_tags
+    raw = <<-RAW
+Before
+
+<pre>
+<prepared-statement-cache-size>32</prepared-statement-cache-size>
+</pre>
+
+After
+RAW
+
+    expected = <<-EXPECTED
+<p>Before</p>
+<pre>
+&lt;prepared-statement-cache-size&gt;32&lt;/prepared-statement-cache-size&gt;
+</pre>
+<p>After</p>
+EXPECTED
+    
+    assert_equal expected.gsub(%r{[\r\n\t]}, ''), textilizable(raw).gsub(%r{[\r\n\t]}, '')
   end
   
   def test_syntax_highlight
@@ -497,5 +519,25 @@ EXPECTED
     # turn off avatars
     Setting.gravatar_enabled = '0'
     assert_nil avatar(User.find_by_mail('jsmith@somenet.foo'))
+  end
+  
+  def test_link_to_user
+    user = User.find(2)
+    t = link_to_user(user)
+    assert_equal "<a href=\"/users/2\">#{ user.name }</a>", t
+  end
+                                      
+  def test_link_to_user_should_not_link_to_locked_user
+    user = User.find(5)
+    assert user.locked?
+    t = link_to_user(user)
+    assert_equal user.name, t
+  end
+                                                                          
+  def test_link_to_user_should_not_link_to_anonymous
+    user = User.anonymous
+    assert user.anonymous?
+    t = link_to_user(user)
+    assert_equal ::I18n.t(:label_user_anonymous), t
   end
 end

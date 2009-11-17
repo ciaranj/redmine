@@ -307,12 +307,14 @@ en:
   setting_mail_handler_api_key: API key
   setting_sequential_project_identifiers: Generate sequential project identifiers
   setting_gravatar_enabled: Use Gravatar user icons
+  setting_gravatar_default: Default Gravatar image
   setting_diff_max_lines_displayed: Max number of diff lines displayed
   setting_file_max_size_displayed: Max size of text files displayed inline
   setting_repository_log_display_limit: Maximum number of revisions displayed on file log
   setting_openid: Allow OpenID login and registration
   setting_password_min_length: Minimum password length
   setting_new_project_user_role_id: Role given to a non-admin user who creates a project
+  setting_default_projects_modules: Default enabled modules for new projects
   
   permission_add_project: Create project
   permission_edit_project: Edit project
@@ -377,6 +379,7 @@ en:
   label_user: User
   label_user_plural: Users
   label_user_new: New user
+  label_user_anonymous: Anonymous
   label_project: Project
   label_project_new: New project
   label_project_plural: Projects
@@ -732,6 +735,7 @@ en:
   button_list: List
   button_view: View
   button_move: Move
+  button_move_and_follow: Move and follow
   button_back: Back
   button_cancel: Cancel
   button_activate: Activate
