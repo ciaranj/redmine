@@ -6,3 +6,4 @@ public/plugin_assets
 config/dblogin.yml
 *#
 .#*
+config/additional_environment.rb
