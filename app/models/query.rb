@@ -401,53 +401,90 @@ class Query < ActiveRecord::Base
   
   # Helper method to generate the WHERE sql for a +field+, +operator+ and a +value+
   def sql_for_field(field, operator, value, db_table, db_field, is_custom_filter=false)
-    sql = ''
-    case operator
-    when "="
-      sql = "#{db_table}.#{db_field} IN (" + value.collect{|val| "'#{connection.quote_string(val)}'"}.join(",") + ")"
-    when "!"
-      sql = "(#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} NOT IN (" + value.collect{|val| "'#{connection.quote_string(val)}'"}.join(",") + "))"
-    when "!*"
-      sql = "#{db_table}.#{db_field} IS NULL"
-      sql << " OR #{db_table}.#{db_field} = ''" if is_custom_filter
-    when "*"
-      sql = "#{db_table}.#{db_field} IS NOT NULL"
-      sql << " AND #{db_table}.#{db_field} <> ''" if is_custom_filter
-    when ">="
-      sql = "#{db_table}.#{db_field} >= #{value.first.to_i}"
-    when "<="
-      sql = "#{db_table}.#{db_field} <= #{value.first.to_i}"
-    when "o"
-      sql = "#{IssueStatus.table_name}.is_closed=#{connection.quoted_false}" if field == "status_id"
-    when "c"
-      sql = "#{IssueStatus.table_name}.is_closed=#{connection.quoted_true}" if field == "status_id"
-    when ">t-"
-      sql = date_range_clause(db_table, db_field, - value.first.to_i, 0)
-    when "<t-"
-      sql = date_range_clause(db_table, db_field, nil, - value.first.to_i)
-    when "t-"
-      sql = date_range_clause(db_table, db_field, - value.first.to_i, - value.first.to_i)
-    when ">t+"
-      sql = date_range_clause(db_table, db_field, value.first.to_i, nil)
-    when "<t+"
-      sql = date_range_clause(db_table, db_field, 0, value.first.to_i)
-    when "t+"
-      sql = date_range_clause(db_table, db_field, value.first.to_i, value.first.to_i)
-    when "t"
-      sql = date_range_clause(db_table, db_field, 0, 0)
-    when "w"
-      from = l(:general_first_day_of_week) == '7' ?
-      # week starts on sunday
-      ((Date.today.cwday == 7) ? Time.now.at_beginning_of_day : Time.now.at_beginning_of_week - 1.day) :
-        # week starts on monday (Rails default)
-        Time.now.at_beginning_of_week
-      sql = "#{db_table}.#{db_field} BETWEEN '%s' AND '%s'" % [connection.quoted_date(from), connection.quoted_date(from + 7.days)]
-    when "~"
-      sql = "LOWER(#{db_table}.#{db_field}) LIKE '%#{connection.quote_string(value.first.to_s.downcase)}%'"
-    when "!~"
-      sql = "LOWER(#{db_table}.#{db_field}) NOT LIKE '%#{connection.quote_string(value.first.to_s.downcase)}%'"
-    end
     
+    list_ms_custom_field= nil;
+    if is_custom_filter && field =~ /^cf_(\d+)$/
+      cf= CustomField.find_by_id($1) 
+      list_ms_custom_field= cf unless cf.nil? || cf.field_format != "list_ms"
+    end
+    sql = ''
+    if list_ms_custom_field.nil?
+      case operator
+      when "="
+        sql = "#{db_table}.#{db_field} IN (" + value.collect{|val| "'#{connection.quote_string(val)}'"}.join(",") + ")"
+      when "!"
+        sql = "(#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} NOT IN (" + value.collect{|val| "'#{connection.quote_string(val)}'"}.join(",") + "))"
+      when "!*"
+        sql = "#{db_table}.#{db_field} IS NULL"
+        sql << " OR #{db_table}.#{db_field} = ''" if is_custom_filter
+      when "*"
+        sql = "#{db_table}.#{db_field} IS NOT NULL"
+        sql << " AND #{db_table}.#{db_field} <> ''" if is_custom_filter
+      when ">="
+        sql = "#{db_table}.#{db_field} >= #{value.first.to_i}"
+      when "<="
+        sql = "#{db_table}.#{db_field} <= #{value.first.to_i}"
+      when "o"
+        sql = "#{IssueStatus.table_name}.is_closed=#{connection.quoted_false}" if field == "status_id"
+      when "c"
+        sql = "#{IssueStatus.table_name}.is_closed=#{connection.quoted_true}" if field == "status_id"
+      when ">t-"
+        sql = date_range_clause(db_table, db_field, - value.first.to_i, 0)
+      when "<t-"
+        sql = date_range_clause(db_table, db_field, nil, - value.first.to_i)
+      when "t-"
+        sql = date_range_clause(db_table, db_field, - value.first.to_i, - value.first.to_i)
+      when ">t+"
+        sql = date_range_clause(db_table, db_field, value.first.to_i, nil)
+      when "<t+"
+        sql = date_range_clause(db_table, db_field, 0, value.first.to_i)
+      when "t+"
+        sql = date_range_clause(db_table, db_field, value.first.to_i, value.first.to_i)
+      when "t"
+        sql = date_range_clause(db_table, db_field, 0, 0)
+      when "w"
+        from = l(:general_first_day_of_week) == '7' ?
+        # week starts on sunday
+        ((Date.today.cwday == 7) ? Time.now.at_beginning_of_day : Time.now.at_beginning_of_week - 1.day) :
+          # week starts on monday (Rails default)
+          Time.now.at_beginning_of_week
+        sql = "#{db_table}.#{db_field} BETWEEN '%s' AND '%s'" % [connection.quoted_date(from), connection.quoted_date(from + 7.days)]
+      when "~"
+        sql = "LOWER(#{db_table}.#{db_field}) LIKE '%#{connection.quote_string(value.first.to_s.downcase)}%'"
+      when "!~"
+        sql = "LOWER(#{db_table}.#{db_field}) NOT LIKE '%#{connection.quote_string(value.first.to_s.downcase)}%'"
+      end
+    else
+      case operator
+      when "=" # is
+        if value.size == 1 
+          sql = "#{db_table}.#{db_field} LIKE ('%#{connection.quote_string(value[0])}%')"
+        else
+          statements=[]
+          value.each do |val|
+            statements << "#{db_table}.#{db_field} LIKE ('%#{connection.quote_string(val)}%')"
+          end
+          sql << "(" << statements.join(" OR ") << ")"
+        end
+      when "!" # is not
+        if value.size == 1 
+          sql = "#{db_table}.#{db_field} NOT LIKE ('%#{connection.quote_string(value[0])}%')"
+        else
+          value.each do |val|
+            statements << "#{db_table}.#{db_field} NOT LIKE ('%#{connection.quote_string(val)}%')"
+          end
+          sql << "(" << statements.join(" AND ") << ")"
+        end
+      when "!*" # none
+        sql = "#{db_table}.#{db_field} IS NULL OR #{db_table}.#{db_field} = ''" 
+      when "*" # all
+        statements=[]
+        list_ms_custom_field.possible_values.each do |val|
+          statements << "#{db_table}.#{db_field} LIKE ('%#{connection.quote_string(val)}%')"
+        end
+        sql << "(" << statements.join(" AND ") << ")"
+      end
+    end
     return sql
   end
   
@@ -458,7 +495,7 @@ class Query < ActiveRecord::Base
       case field.field_format
       when "text"
         options = { :type => :text, :order => 20 }
-      when "list"
+      when "list","list_ms"
         options = { :type => :list_optional, :values => field.possible_values, :order => 20}
       when "date"
         options = { :type => :date, :order => 20 }

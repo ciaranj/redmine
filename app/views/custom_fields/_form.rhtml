@@ -20,6 +20,12 @@ function toggle_custom_field_format() {
       if (p_searchable) Element.show(p_searchable.parentNode);
       Element.show(p_values);
       break;
+    case "list_ms":
+      Element.hide(p_length.parentNode);
+      Element.hide(p_regexp.parentNode);
+      if (p_searchable) Element.show(p_searchable.parentNode);
+      Element.show(p_values);
+      break;
     case "bool":
       p_default.setAttribute('type','checkbox');
       Element.hide(p_length.parentNode);

@@ -1,12 +1,17 @@
 <div class="splitcontentleft">
-<% i = 0 %>
-<% split_on = (@issue.custom_field_values.size / 2.0).ceil - 1 %>
-<% @issue.custom_field_values.each do |value| %>
+<% i = 0 
+  not_split_yet= true
+  total_size= @issue.custom_field_values.inject(0) do |total_size, value|
+	total_size + get_display_size_value(value)
+  end
+  split_on = (total_size / 2.0).ceil - 1 
+  @issue.custom_field_values.each do |value| %>
 	<p><%= custom_field_tag_with_label :issue, value %></p>
-<% if i == split_on -%>
+<% if i+ get_display_size_value(value)  >= split_on && not_split_yet 
+	not_split_yet= false-%>
 </div><div class="splitcontentright">
 <% end -%>
-<% i += 1 -%>
+<% i += get_display_size_value(value) -%>
 <% end -%>
 </div>
 <div style="clear:both;"> </div>

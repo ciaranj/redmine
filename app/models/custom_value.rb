@@ -42,6 +42,13 @@ class CustomValue < ActiveRecord::Base
     value.to_s
   end
   
+  def value=(val)
+    if custom_field.field_format == "list_ms" && val.kind_of?(Array)
+      val= val.join(",")
+    end
+    write_attribute(:value, val)
+  end
+    
 protected
   def validate
     if value.blank?
@@ -61,6 +68,9 @@ protected
         errors.add(:value, :not_a_date) unless value =~ /^\d{4}-\d{2}-\d{2}$/
       when 'list'
         errors.add(:value, :inclusion) unless custom_field.possible_values.include?(value)
+      when 'list_ms'
+       # forget about space trimming for now...
+       errors.add(:value, :inclusion) unless  (value.split(",") & custom_field.possible_values).size >0
       end
     end
   end

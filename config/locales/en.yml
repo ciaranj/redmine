@@ -454,6 +454,7 @@ en:
   label_and_its_subprojects: "{{value}} and its subprojects"
   label_min_max_length: Min - Max length
   label_list: List
+  label_multi_select_list: List (Multi-Select)
   label_date: Date
   label_integer: Integer
   label_float: Float

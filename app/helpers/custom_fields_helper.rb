@@ -49,6 +49,8 @@ module CustomFieldsHelper
                        (custom_field.default_value.blank? ? "<option value=\"\">--- #{l(:actionview_instancetag_blank_option)} ---</option>" : '') : 
                        '<option></option>'
       select_tag(field_name, blank_option + options_for_select(custom_field.possible_values, custom_value.value), :id => field_id)
+    when "list_ms"
+      select_tag(field_name,  options_for_select(custom_field.possible_values, custom_value.value.split(",")), :id => field_id, :multiple=> true, :size=>4)
     else
       text_field_tag(field_name, custom_value.value, :id => field_id)
     end
@@ -81,8 +83,20 @@ module CustomFieldsHelper
       begin; format_date(value.to_date); rescue; value end
     when "bool"
       l(value == "1" ? :general_text_Yes : :general_text_No)
+    when "list_ms"
+      value.gsub(",",", ") #try and encourage browser wrapping by throwing a space in there
     else
       value
+    end
+  end
+  
+  # Return a number that represents the number of 'rows' that this control consumes
+  def get_display_size_value(custom_value)
+    return 1  unless custom_value
+    
+    case custom_value.custom_field.field_format
+           when "list_ms" then 3 # Whilst the list is size 4, 3 seems to work more aesthetically :)
+           else 1
     end
   end
 
