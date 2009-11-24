@@ -229,7 +229,7 @@ class Issue < ActiveRecord::Base
   
   # Versions that the issue can be assigned to
   def assignable_versions
-    @assignable_versions ||= (project.versions.open + [Version.find_by_id(fixed_version_id_was)]).compact.uniq.sort
+    @assignable_versions ||= (project.open_shared_versions + [Version.find_by_id(fixed_version_id_was)]).compact.uniq.sort
   end
   
   # Returns true if this issue is blocked by another issue that is still open
