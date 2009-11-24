@@ -1,6 +1,6 @@
 class BuildProjectsTree < ActiveRecord::Migration
   def self.up
-    Project.rebuild!
+    Project.rebuild! unless Project.find(:first).nil?
   end
 
   def self.down
