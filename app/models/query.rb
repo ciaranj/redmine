@@ -186,7 +186,6 @@ class Query < ActiveRecord::Base
     if User.current.logged?
       @available_filters["watcher_id"] = { :type => :list, :order => 15, :values => [["<< #{l(:label_me)} >>", "me"]] }
     end
-  
     if project
       # project specific filters
       unless @project.issue_categories.empty?
@@ -202,6 +201,11 @@ class Query < ActiveRecord::Base
     else
       # global filters for cross project issue list
       add_custom_fields_filters(IssueCustomField.find(:all, :conditions => {:is_filter => true, :is_for_all => true}))
+      
+      # pull in all target versions across all projects for this user.
+      debugger
+      @available_filters["fixed_version_id"] = { :type => :list_optional, :order => 6, :values => User.current.projects.collect(&:shared_versions).flatten.uniq.sort.collect{|s| ["#{s.project.name} - #{s.name}", s.id.to_s] } }
+      
     end
     @available_filters
   end
