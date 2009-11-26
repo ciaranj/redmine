@@ -192,7 +192,7 @@ class Query < ActiveRecord::Base
       unless @project.issue_categories.empty?
         @available_filters["category_id"] = { :type => :list_optional, :order => 6, :values => @project.issue_categories.collect{|s| [s.name, s.id.to_s] } }
       end
-      unless @project.versions.empty?
+      unless @project.shared_versions.empty?
         @available_filters["fixed_version_id"] = { :type => :list_optional, :order => 7, :values => @project.shared_versions.sort.collect{|s| ["#{s.project.name} - #{s.name}", s.id.to_s] } }
       end
       unless @project.descendants.active.empty?
