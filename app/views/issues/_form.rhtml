@@ -32,10 +32,12 @@
                      {:controller => 'projects', :action => 'add_issue_category', :id => @project},
                      :class => 'small', :tabindex => 199) if authorize_for('projects', 'add_issue_category') %></p>
 <% end %>
-<% unless @issue.assignable_versions.empty? %>
+<% unless @issue.assignable_versions.empty?
+	current_version= Version.find_by_id(@issue.fixed_version_id) 
+%>
 	<%= content_tag('p', f.select(:fixed_version_id, 
-	                              (shared_version_options(@project)),
-	                              { :include_blank => true })) unless @project.shared_versions.empty? %>
+	                              (current_version.nil? ? [] : [[format_version_name(current_version), current_version.id]]) + shared_version_options(@project),
+	                              { :include_blank => true })) unless @project.shared_versions.empty?  && current_version.nil? %>
 <% end %>
 </div>
 
