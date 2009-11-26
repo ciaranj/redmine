@@ -24,7 +24,7 @@
 <% end %>
 
 <p><%= f.select :priority_id, (@priorities.collect {|p| [p.name, p.id]}), :required => true %></p>
-<p><%= f.select :assigned_to_id, (@issue.assignable_users.collect {|m| [m.name, m.id]}), :include_blank => true %></p>
+<p><%= f.select :assigned_to_id, (@issue.assigned_to.nil? ? [] : [[@issue.assigned_to.name,@issue.assigned_to.id]])+(@issue.assignable_users.collect {|m| [m.name, m.id]}), :include_blank => true %></p>
 <% unless @project.issue_categories.empty? %>
 <p><%= f.select :category_id, (@project.issue_categories.collect {|c| [c.name, c.id]}), :include_blank => true %>
 <%= prompt_to_remote(l(:label_issue_category_new),
