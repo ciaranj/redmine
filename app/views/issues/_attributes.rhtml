@@ -17,7 +17,7 @@
                      :class => 'small', :tabindex => 199) if authorize_for('projects', 'add_issue_category') %></p>
 <% end %>
 <% unless @issue.assignable_versions.empty? %>
-<p><%= 		f.select :fixed_version_id, (@issue.fixed_version.nil? ? [] : [[format_version_name(@issue.fixed_version), @issue.fixed_version.id]]) + shared_version_options(@project), { :include_blank => true }) unless @project.shared_versions.empty?  && current_version.nil? %></p>
+<p><%= 		f.select( :fixed_version_id, (@issue.fixed_version.nil? ? [] : [[format_version_name(@issue.fixed_version), @issue.fixed_version.id]]) + shared_version_options(@project), { :include_blank => true }) unless @project.shared_versions.empty?  && current_version.nil? %></p>
 <% end %>
 </div>
 
