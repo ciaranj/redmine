@@ -191,7 +191,7 @@ class IssuesController < ApplicationController
     end
 
     if request.post?
-      @issue.parent_id = params[:issue][:parent_id] if params[:issue]
+      @issue.parent_id = params[:issue][:parent_id] if params[:issue] && params[:issue][:parent_id]
 
       @time_entry = TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => Date.today)
       @time_entry.attributes = params[:time_entry]
