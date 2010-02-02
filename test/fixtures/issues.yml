@@ -15,6 +15,8 @@ issues_001:
   status_id: 1
   start_date: <%= 1.day.ago.to_date.to_s(:db) %>
   due_date: <%= 10.day.from_now.to_date.to_s(:db) %>
+  lft: '1'
+  rgt: '2'
 issues_002: 
   created_on: 2006-07-19 21:04:21 +02:00
   project_id: 1
@@ -31,6 +33,8 @@ issues_002:
   status_id: 2
   start_date: <%= 2.day.ago.to_date.to_s(:db) %>
   due_date: 
+  lft: '3'
+  rgt: '4'
 issues_003: 
   created_on: 2006-07-19 21:07:27 +02:00
   project_id: 1
@@ -47,6 +51,8 @@ issues_003:
   status_id: 1
   start_date: <%= 1.day.from_now.to_date.to_s(:db) %>
   due_date: <%= 40.day.ago.to_date.to_s(:db) %>
+  lft: '5'
+  rgt: '6'
 issues_004: 
   created_on: <%= 5.days.ago.to_date.to_s(:db) %>
   project_id: 2
@@ -61,6 +67,8 @@ issues_004:
   assigned_to_id: 2
   author_id: 2
   status_id: 1
+  lft: '7'
+  rgt: '8'
 issues_005: 
   created_on: <%= 5.days.ago.to_date.to_s(:db) %>
   project_id: 3
@@ -75,6 +83,8 @@ issues_005:
   assigned_to_id: 
   author_id: 2
   status_id: 1
+  lft: '9'
+  rgt: '10'
 issues_006: 
   created_on: <%= 1.minute.ago.to_date.to_s(:db) %>
   project_id: 5
@@ -91,6 +101,8 @@ issues_006:
   status_id: 1
   start_date: <%= Date.today.to_s(:db) %>
   due_date: <%= 1.days.from_now.to_date.to_s(:db) %>
+  lft: '11'
+  rgt: '12'
 issues_007: 
   created_on: <%= 10.days.ago.to_date.to_s(:db) %>
   project_id: 1
@@ -108,6 +120,8 @@ issues_007:
   start_date: <%= 10.days.ago.to_s(:db) %>
   due_date: <%= Date.today.to_s(:db) %>
   lock_version: 0
+  lft: '13'
+  rgt: '14'
 issues_008: 
   created_on: <%= 10.days.ago.to_date.to_s(:db) %>
   project_id: 1
@@ -125,6 +139,8 @@ issues_008:
   start_date: 
   due_date: 
   lock_version: 0
+  lft: '15'
+  rgt: '16'
 issues_009: 
   created_on: <%= 1.minute.ago.to_date.to_s(:db) %>
   project_id: 5
@@ -141,6 +157,8 @@ issues_009:
   status_id: 1
   start_date: <%= Date.today.to_s(:db) %>
   due_date: <%= 1.days.from_now.to_date.to_s(:db) %>
+  lft: '17'
+  rgt: '18'
 issues_010: 
   created_on: <%= 1.minute.ago.to_date.to_s(:db) %>
   project_id: 5
@@ -157,6 +175,8 @@ issues_010:
   status_id: 1
   start_date: <%= Date.today.to_s(:db) %>
   due_date: <%= 1.days.from_now.to_date.to_s(:db) %>
+  lft: '19'
+  rgt: '20'
 issues_011: 
   created_on: <%= 3.days.ago.to_date.to_s(:db) %>
   project_id: 1
@@ -173,6 +193,8 @@ issues_011:
   status_id: 5
   start_date: <%= 1.day.ago.to_date.to_s(:db) %>
   due_date:
+  lft: '21'
+  rgt: '22'
 issues_012: 
   created_on: <%= 3.days.ago.to_date.to_s(:db) %>
   project_id: 1
@@ -189,6 +211,8 @@ issues_012:
   status_id: 5
   start_date: <%= 1.day.ago.to_date.to_s(:db) %>
   due_date:
+  lft: '23'
+  rgt: '24'
 issues_013:
   created_on: <%= 5.days.ago.to_date.to_s(:db) %>
   project_id: 3
@@ -203,3 +227,148 @@ issues_013:
   assigned_to_id: 
   author_id: 2
   status_id: 1
+  lft: '25'
+  rgt: '26'
+issues_root:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 1
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: root
+  id: 14
+  fixed_version_id: 
+  category_id: 
+  description: This is root of subissues.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date: 
+  lock_version: 0
+  lft: "27"
+  rgt: "38"
+  parent_id:
+
+issues_child001:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 1
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: child001
+  id: 15
+  fixed_version_id: 
+  category_id: 
+  description: This is child001 of root.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date: 
+  lock_version: 0
+  parent_id: 14
+  lft: "28"
+  rgt: "33"
+issues_child002:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 1
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: child002
+  id: 16
+  fixed_version_id: 
+  category_id: 
+  description: This is child002 of root.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date: 
+  lock_version: 0
+  parent_id: 14
+  lft: "34"
+  rgt: "37"
+issues_subchild001:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 1
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: subchild001
+  id: 17
+  fixed_version_id: 
+  category_id: 
+  description: This is subchild001 of child001.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date: 
+  lock_version: 0
+  parent_id: 15
+  lft: "29"
+  rgt: "30"
+issues_subchild002:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 1
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: subchild002
+  id: 18
+  fixed_version_id: 
+  category_id: 
+  description: This is subchild002 of child001.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date: 
+  lock_version: 0
+  parent_id: 15
+  lft: "31"
+  rgt: "32"
+issues_subchild003:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 1
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: subchild003
+  id: 19
+  fixed_version_id: 
+  category_id: 
+  description: This is subchild003 of child002.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date:  <%= 10.days.from_now.to_date.to_s(:db) %>
+  lock_version: 0
+  parent_id: 16
+  lft: "35"
+  rgt: "36"
+
+issue_leaf_from_another_project:
+  created_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  project_id: 2
+  updated_on: <%= 10.days.ago.to_date.to_s(:db) %>
+  priority_id: 4
+  subject: issue_leaf_from_another_project
+  id: 20
+  fixed_version_id: 4
+  category_id: 3
+  description: This is issue from another project.
+  tracker_id: 1
+  assigned_to_id: 
+  author_id: 2
+  status_id: 1
+  start_date: 
+  due_date: 
+  lock_version: 0
+  parent_id: nil
+  lft: "13"
+  rgt: "14"
+

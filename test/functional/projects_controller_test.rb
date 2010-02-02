@@ -390,6 +390,9 @@ class ProjectsControllerTest < ActionController::TestCase
   end
 
   def test_post_destroy
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     @request.session[:user_id] = 1 # admin
     post :destroy, :id => 1, :confirm => 1
     assert_redirected_to 'admin/projects'
@@ -612,6 +615,9 @@ class ProjectsControllerTest < ActionController::TestCase
   end
   
   def test_archive
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     @request.session[:user_id] = 1 # admin
     post :archive, :id => 1
     assert_redirected_to 'admin/projects'

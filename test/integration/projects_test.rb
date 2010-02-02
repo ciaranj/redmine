@@ -21,6 +21,9 @@ class ProjectsTest < ActionController::IntegrationTest
   fixtures :projects, :users, :members
   
   def test_archive_project
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     subproject = Project.find(1).children.first
     log_user("admin", "admin")
     get "admin/projects"

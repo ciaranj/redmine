@@ -69,3 +69,22 @@ versions_007:
   effective_date: 
   status: open
   sharing: 'system'
+onlinestore_1_0: 
+  created_on: 2006-07-19 21:00:33 +02:00
+  name: "1.0"
+  project_id: 2
+  updated_on: 2006-07-19 21:00:33 +02:00
+  id: 8
+  description: Future version
+  effective_date: 
+  status: open
+versions_009: 
+  created_on: 2006-07-19 21:00:33 +02:00
+  name: "2.1"
+  project_id: 1
+  updated_on: 2006-07-19 21:00:33 +02:00
+  id: 9
+  description: Future version
+  effective_date: 
+  status: open
+

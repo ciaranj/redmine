@@ -127,6 +127,23 @@ class QueriesControllerTest < ActionController::TestCase
     assert_equal [['due_date', 'desc'], ['tracker', 'asc']], query.sort_criteria
   end
   
+  def test_new_with_view_options
+    @request.session[:user_id] = 1
+    post :new,
+         :confirm => '1',
+         :default_columns => '1',
+         :operators => {"status_id" => "o"},
+         :values => {"status_id" => ["1"]},
+         :query => {:name => "test_new_with_view_options",
+                    :is_public => "1"},
+         :view_options => {:show_parents => 'organize_by_parent'}
+    
+    query = Query.find_by_name("test_new_with_view_options")
+    assert_not_nil query
+    assert query.view_options.key?('show_parents')
+    assert_equal "organize_by_parent", query.view_options['show_parents']
+  end
+  
   def test_get_edit_global_public_query
     @request.session[:user_id] = 1
     get :edit, :id => 4

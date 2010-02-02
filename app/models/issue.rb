@@ -36,7 +36,7 @@ class Issue < ActiveRecord::Base
   acts_as_customizable
   acts_as_watchable
   acts_as_searchable :columns => ['subject', "#{table_name}.description", "#{Journal.table_name}.notes"],
-                     :include => [:project, :journals],
+                     :include => [:project, :journals, :tracker],
                      # sort by id so that limited eager loading doesn't break with postgresql
                      :order_column => "#{table_name}.id"
   acts_as_event :title => Proc.new {|o| "#{o.tracker.name} ##{o.id} (#{o.status}): #{o.subject}"},
@@ -46,12 +46,37 @@ class Issue < ActiveRecord::Base
   acts_as_activity_provider :find_options => {:include => [:project, :author, :tracker]},
                             :author_key => :author_id
 
-  DONE_RATIO_OPTIONS = %w(issue_field issue_status)
+  # Needs to be registered before any before_destroy in acts_as_nested_set
+  before_destroy :move_children_to_root_before_destroy
+
+  acts_as_nested_set
+
+  # Patches to acts_as_nested_set since Issue already defines #move_to
+  def move_to_left_of(node)
+    nested_set_move_to node, :left
+  end
+
+  def move_to_right_of(node)
+    nested_set_move_to node, :right
+  end
+
+  def move_to_child_of(node)
+    nested_set_move_to node, :child
+  end
   
+  def move_to_root
+    nested_set_move_to nil, :root
+  end
+
+  alias_method :nested_set_move_to, :move_to
+  
+  DONE_RATIO_OPTIONS = %w(issue_field issue_status)
+
   validates_presence_of :subject, :priority, :project, :tracker, :author, :status
   validates_length_of :subject, :maximum => 255
   validates_inclusion_of :done_ratio, :in => 0..100
   validates_numericality_of :estimated_hours, :allow_nil => true
+  validate :subtasks_validation
 
   named_scope :visible, lambda {|*args| { :include => :project,
                                           :conditions => Project.allowed_to_condition(args.first || User.current, :view_issues) } }
@@ -60,6 +85,8 @@ class Issue < ActiveRecord::Base
 
   before_save :update_done_ratio_from_issue_status
   after_save :create_journal
+  after_save :set_parent
+  after_save :do_subtasks_hooks
   
   # Returns true if usr or current user is allowed to view the issue
   def visible?(usr=nil)
@@ -91,13 +118,20 @@ class Issue < ActiveRecord::Base
   # Returns the moved/copied issue on success, false on failure
   def move_to(new_project, new_tracker = nil, options = {})
     options ||= {}
-    issue = options[:copy] ? self.clone : self
+    issue = if options[:copy]
+              Issue.new( self.attributes.reject { |k,v| k == 'parent_id' })
+            else
+              self
+            end
+
     transaction do
       if new_project && issue.project_id != new_project.id
         # delete issue relations
         unless Setting.cross_project_issue_relations?
           issue.relations_from.clear
           issue.relations_to.clear
+
+          issue.children.each(&:move_to_root) unless options[:copy]
         end
         # issue is moved to another project
         # reassign to the category with same name if any
@@ -129,6 +163,9 @@ class Issue < ActiveRecord::Base
           # Manually update project_id on related time entries
           TimeEntry.update_all("project_id = #{new_project.id}", {:issue_id => id})
         end
+        if new_project && issue.project_id != new_project.id && !Setting.cross_project_issue_relations?
+          issue.move_to_root
+        end
       else
         Issue.connection.rollback_db_transaction
         return false
@@ -136,7 +173,16 @@ class Issue < ActiveRecord::Base
     end
     return issue
   end
-  
+
+  # Cache awesome_nested_set's level attribute, it goes back to the
+  # database and counts ancestors which can be expensive.
+  def level
+    unless @level
+      @level = super
+    end
+    @level
+  end
+
   def priority_id=(pid)
     self.priority = nil
     write_attribute(:priority_id, pid)
@@ -160,16 +206,81 @@ class Issue < ActiveRecord::Base
     self.attributes_without_tracker_first = new_attributes, *args
   end
   alias_method_chain :attributes=, :tracker_first
+
+  # Need to define the setter because awesome_nested_set removes the
+  # parent_id setter since parent is an internal field.  If parent
+  # isn't set though, then parent changes will not be logged to journals.
+  def parent_id=(pid)
+    if pid != id
+      write_attribute(:parent_id, pid)
+    else
+      false # Circular reference
+    end
+  end
+
+  def estimated_hours
+    if leaf?
+      read_attribute(:estimated_hours)
+    else
+      children.inject(0) do |sum, issue|
+        if issue.estimated_hours.present?
+          sum + issue.estimated_hours
+        else
+          sum
+        end
+      end
+    end
+  end
+
+  # Returns the estimated_hours, disregarding child issues
+  def original_estimated_hours
+    read_attribute(:estimated_hours)
+  end
   
   def estimated_hours=(h)
-    write_attribute :estimated_hours, (h.is_a?(String) ? h.to_hours : h)
+    write_attribute :estimated_hours, (h.is_a?(String) ? h.to_hours : h) if leaf?
+  end
+
+  def due_date
+    if leaf?
+      read_attribute( :due_date)
+    else
+      unless @due_date # cache, expensive operation
+        dates = leaves.map(&:due_date)
+        @due_date = dates.select {|d| d }.max if (dates && dates.any?)
+      end
+      @due_date
+    end
+  end  
+  
+  [ :due_date, :done_ratio ].each do |method|
+    src = <<-END_SRC
+      def #{method}=(value)
+        write_attribute( :#{method}, value) if leaf?
+      end
+      END_SRC
+    class_eval src, __FILE__, __LINE__
   end
   
   def done_ratio
-    if Issue.use_status_for_done_ratio? && status && status.default_done_ratio?
-      status.default_done_ratio
+    if leaf? 
+      if Issue.use_status_for_done_ratio? && status && status.default_done_ratio?
+        status.default_done_ratio
+      else
+        read_attribute(:done_ratio)
+      end
     else
-      read_attribute(:done_ratio)
+      unless @done_ratio # cache, expensive operation
+        total_planned_days = leaves.inject(0) {|sum,i| sum + i.duration}
+
+        if total_planned_days == 0
+          @done_ratio = 0
+        else
+          total_actual_days = leaves.inject(0) {|sum,i| sum + i.actual_days}
+          @done_ratio = (total_actual_days * 100 / total_planned_days).floor
+        end
+      end
+      @done_ratio
     end
   end
 
@@ -182,7 +293,7 @@ class Issue < ActiveRecord::Base
   end
   
   def validate
-    if self.due_date.nil? && @attributes['due_date'] && !@attributes['due_date'].empty?
+    if self.due_date.nil? && @attributes['due_date'] && !@attributes['due_date'].empty? && leaf?
       errors.add :due_date, :not_a_date
     end
     
@@ -231,7 +342,13 @@ class Issue < ActiveRecord::Base
     
     # Update start/due dates of following issues
     relations_from.each(&:set_issue_to_dates)
-    
+
+    # If target version is set, but "Due to" date is not, set
+    # it as the same as the date of target version.
+    if leaf? && due_date.nil? && fixed_version && fixed_version.due_date
+      self.update_attribute :due_date, fixed_version.due_date
+    end
+
     # Close duplicates if the issue was closed
     if @issue_before_change && !@issue_before_change.closed? && self.closed?
       duplicates.each do |duplicate|
@@ -256,10 +373,18 @@ class Issue < ActiveRecord::Base
     updated_on_will_change!
     @current_journal
   end
+
+  def journal_initilized?
+    @current_journal
+  end
   
   # Return true if the issue is closed, otherwise false
   def closed?
     self.status.is_closed?
+  end
+
+  def open?
+    !closed?
   end
   
   # Return true if the issue is being reopened
@@ -359,6 +484,17 @@ class Issue < ActiveRecord::Base
   def soonest_start
     @soonest_start ||= relations_to.collect{|relation| relation.successor_soonest_start}.compact.min
   end
+
+  # Returns the number of days that have been worked on this issue.
+  # Calculated by using the duration of the issue (start/end dates)
+  # and the done ratio
+  def actual_days
+    if done_ratio
+      (duration * done_ratio / 100).floor
+    else
+      0
+    end
+  end
   
   def to_s
     "#{tracker} ##{id}: #{subject}"
@@ -388,6 +524,10 @@ class Issue < ActiveRecord::Base
     Issue.update_versions(["#{Version.table_name}.project_id IN (?) OR #{Issue.table_name}.project_id IN (?)", moved_project_ids, moved_project_ids])
   end
 
+  def leaf?
+    new_record? || (right - left == 1)
+  end
+
   private
   
   # Update issues so their versions are not pointing to a
@@ -402,7 +542,7 @@ class Issue < ActiveRecord::Base
               :include => [:project, :fixed_version]
               ).each do |issue|
       next if issue.project.nil? || issue.fixed_version.nil?
-      unless issue.project.shared_versions.include?(issue.fixed_version)
+      unless issue.project.shared_versions.collect(&:id).include?(issue.fixed_version_id)
         issue.init_journal(User.current)
         issue.fixed_version = nil
         issue.save
@@ -424,7 +564,11 @@ class Issue < ActiveRecord::Base
   def create_journal
     if @current_journal
       # attributes changes
-      (Issue.column_names - %w(id description lock_version created_on updated_on)).each {|c|
+      skip_attrs = %w(id description lock_version created_on updated_on)
+      skip_attrs += %w(due_date done_ratio estimated_hours) unless leaf?
+
+      # attributes changes
+      (Issue.column_names - skip_attrs).each {|c|
         @current_journal.details << JournalDetail.new(:property => 'attr',
                                                       :prop_key => c,
                                                       :old_value => @issue_before_change.send(c),
@@ -442,4 +586,69 @@ class Issue < ActiveRecord::Base
       @current_journal.save
     end
   end
+
+
+  def move_children_to_root_before_destroy
+    unless Setting.delete_children?
+      children.each( &:move_to_root)
+      reload_nested_set
+    end
+  end
+  
+  def do_subtasks_hooks
+    if parent
+      # Need to reload the Issues.  Using the association or
+      # parent.reload was keeping the object readonly.
+      parent_issue = Issue.find parent.id
+      self.reload
+
+      # Update the parent status if this issue is open and the parent
+      # is closed
+      if open? && parent_issue.closed?
+        parent_issue.init_journal(User.current)
+        parent_issue.status = IssueStatus.find_by_id(Setting.reopened_parent_issue_status) || IssueStatus.default
+      end
+      
+      # Set 'Target version' of parent if one was set on one of the
+      # children issue and parent have no 'Target version'. Do the same
+      # if 'Target version of the parent issue lower (by the release
+      # date or by the version number).
+      if parent_issue.fixed_version.nil? && fixed_version or
+          ( parent_issue.fixed_version && fixed_version and
+            parent_issue.fixed_version.project == fixed_version.project and
+            parent_issue.fixed_version < fixed_version )
+        parent_issue.init_journal(User.current) unless parent_issue.journal_initilized?
+        parent_issue.fixed_version = fixed_version
+      end
+      parent_issue.save if parent_issue.changed?
+    end
+  end
+
+  def set_parent
+    if (@issue_before_change && @issue_before_change.parent_id != parent_id) ||
+        self.lock_version == 0 # Newly saved record
+      if parent_id.present?
+        parent_issue = Issue.visible.find_by_id(parent_id)
+        move_to_child_of parent_issue if parent_issue
+      else
+        move_to_root
+      end
+    end
+  end
+  
+  def subtasks_validation
+    unless children.empty?
+      if IssueStatus.find_by_id( @attributes['status_id']).is_closed? && children.detect { |i| !i.closed? }
+        errors.add( :status, l(:error_issue_subtasks_cant_close_parent))
+      end
+      
+      children_max_fixed_version = children.select { |i| i.fixed_version } .max { |a,b| a.fixed_version <=> b.fixed_version }
+      if @attributes['fixed_version_id'] && children_max_fixed_version
+        if Version.find_by_id( @attributes['fixed_version_id']) < children_max_fixed_version.fixed_version
+          errors.add :fixed_version, l(:error_issue_subtasks_cant_select_lower_target_version)
+        end
+      end
+    end
+  end
+
 end

@@ -602,6 +602,7 @@ div.autocomplete ul li {
   border-bottom: 1px solid #ccc;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
+  background-color: white;
 }
 div.autocomplete ul li span.informal {
   font-size: 80%;
@@ -846,3 +847,43 @@ h2 img { vertical-align:middle; }
   #content { width: 99%; margin: 0; padding: 0; border: 0; background: #fff; overflow: visible !important;}
 	#wiki_add_attachment { display:none; }
 }
+
+/***** Subtasks *****/
+.issue-subject-in-tree, .issue-subject-in-tree .issue-subject {
+    background-image: url(../images/corner-dots.gif);
+    background-repeat: no-repeat;
+    background-position: -3px center;
+}
+
+/* Used to show issues which is not pass by filter, but should by
+   shown as parent for other issue. */
+.issue-unfiltered {
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
+.issue-emphasis {
+  font-weight: bold;    
+}
+
+.expanded-issue {
+	background-image: url(contract.png);
+	background-repeat: no-repeat;
+}
+
+.contracted-issue {
+	background-image: url(expand.png);
+	background-repeat: no-repeat;
+}
+
+.expand-icon, .contract-icon{
+/* 	position: absolute; */
+	vertical-align: middle;
+}
+
+/*text after the icon, which needs to be indented so that all its lines stay completely after the icon*/
+.issue-subject{
+	padding-left: 1em;
+}
+
+input#parent_issue {width: 80%;}

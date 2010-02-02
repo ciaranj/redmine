@@ -31,6 +31,7 @@ class QueriesController < ApplicationController
       @query.add_filter(field, params[:operators][field], params[:values][field])
     end if params[:fields]
     @query.group_by ||= params[:group_by]
+    @query.view_options = params[:view_options] if params[:view_options]
     
     if request.post? && params[:confirm] && @query.save
       flash[:notice] = l(:notice_successful_create)
