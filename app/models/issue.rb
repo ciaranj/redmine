@@ -271,13 +271,22 @@ class Issue < ActiveRecord::Base
       end
     else
       unless @done_ratio # cache, expensive operation
-        total_planned_days = leaves.inject(0) {|sum,i| sum + i.duration}
+        if Issue.use_status_for_done_ratio?
+          total_done_ratio=children.inject(0) {|sum, i| sum + i.done_ratio}
+          if total_done_ratio == 0 
+            @done_ratio = 0
+          else 
+            @done_ratio = (total_done_ratio / children.size )
+          end
+        else 
+          total_planned_days = leaves.inject(0) {|sum,i| sum + i.duration}
 
-        if total_planned_days == 0
-          @done_ratio = 0
-        else
-          total_actual_days = leaves.inject(0) {|sum,i| sum + i.actual_days}
-          @done_ratio = (total_actual_days * 100 / total_planned_days).floor
+          if total_planned_days == 0
+            @done_ratio = 0
+          else
+            total_actual_days = leaves.inject(0) {|sum,i| sum + i.actual_days}
+            @done_ratio = (total_actual_days * 100 / total_planned_days).floor
+          end
         end
       end
       @done_ratio
