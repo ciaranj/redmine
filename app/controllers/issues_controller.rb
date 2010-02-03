@@ -25,7 +25,7 @@ class IssuesController < ApplicationController
   before_filter :authorize, :except => [:index, :changes, :gantt, :calendar, :preview, :context_menu, :add_subissue]
   before_filter :find_optional_project, :only => [:index, :changes, :gantt, :calendar]
   before_filter :find_parent_issue, :only => [:add_subissue]
-  before_filter :find_optional_parent_issue, :only => [:new]
+  before_filter :find_optional_parent_issue, :only => [:new, :update_form]
 
   accept_key_auth :index, :show, :changes
 
