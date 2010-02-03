@@ -27,6 +27,10 @@ class IssueTest < ActiveSupport::TestCase
            :custom_fields, :custom_fields_projects, :custom_fields_trackers, :custom_values,
            :time_entries
 
+  def setup
+    Setting.reopened_parent_issue_status = ''
+  end
+
   def test_create
     issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => IssuePriority.all.first, :subject => 'test_create', :description => 'IssueTest#test_create', :estimated_hours => '1:30')
     assert issue.save
@@ -556,6 +560,40 @@ class IssueTest < ActiveSupport::TestCase
         assert_equal 50, @issue.done_ratio
       end
     end
+
+    context "on a leaf" do
+      should "return the attribute" do
+        issue = Issue.generate_for_project!(Project.find(1), :subject => 'is a leaf', :done_ratio => 50)
+        assert_equal 50, issue.done_ratio
+      end
+    end
+
+    context "not a leaf (has child issues)" do
+      should "total the estimated hours of the children" do
+        @issue1 = Issue.generate_for_project!(Project.find(1), :subject => 'parent', :done_ratio => 10, :start_date => '2009-12-07', :due_date => '2009-12-17')
+        @issue2 = Issue.generate_for_project!(Project.find(1), :subject => 'parent 2', :done_ratio => 20, :start_date => '2009-12-07', :due_date => '2009-12-17')
+        @issue3 = Issue.generate_for_project!(Project.find(1), :subject => 'c', :done_ratio => 30, :start_date => '2009-12-07', :due_date => '2009-12-17')
+        @issue4 = Issue.generate_for_project!(Project.find(1), :subject => 'c', :done_ratio => 40, :start_date => '2009-12-07', :due_date => '2009-12-17')
+        @issue5 = Issue.generate_for_project!(Project.find(1), :subject => 'c', :done_ratio => 50, :start_date => '2009-12-07', :due_date => '2009-12-17')
+
+        @issue2.move_to_child_of @issue1
+        @issue3.move_to_child_of @issue2
+        @issue4.move_to_child_of @issue2
+        @issue5.move_to_child_of @issue2
+
+        [@issue1, @issue2, @issue3, @issue4, @issue5].each {|i| i.reload }
+
+        assert_equal 50, @issue5.done_ratio # Leaf
+        assert_equal 40, @issue4.done_ratio # Leaf
+        assert_equal 30, @issue3.done_ratio # Leaf
+        # Parent with three. Children are 12 actual days / 30 planned days
+        assert_equal 40, @issue2.done_ratio
+        # Grantparent with three. Children are 12 actual days / 30
+        # planned days.  Issue2 doesn't add anything since it's just a
+        # parent task for the leafs
+        assert_equal 40, @issue1.done_ratio
+      end
+    end
   end
 
   context "#update_done_ratio_from_issue_status" do
@@ -589,4 +627,280 @@ class IssueTest < ActiveSupport::TestCase
       end
     end
   end
+
+  context "#do_subtasks_hooks" do
+    should "update target version of parent issue" do
+      create_family_of_issues 'Target version of parent updates test'
+
+      version_2_0 = Version.find( versions( :versions_003).id)
+      version_2_1 = Version.find( versions( :versions_009).id)
+
+      # set target version for child
+      @issue2.fixed_version = version_2_0
+      assert @issue2.save
+      assert @issue1.reload.fixed_version == @issue2.fixed_version
+
+      # set target version for child of child larger than target version
+      # of child. so, target version of parents should be updated.
+      @issue3.fixed_version = version_2_1
+      assert @issue3.save
+      assert @issue1.reload.fixed_version == @issue3.fixed_version
+    end
+
+    should "not allow closing the parent issue while one of the children is open" do
+      create_family_of_issues 'Closing parent issue when some children is open test.'
+
+      closed_status = issue_statuses( :issue_statuses_005)
+      @issue3.status = closed_status
+      assert @issue3.save
+
+      assert_raise ActiveRecord::RecordInvalid do
+        @issue1.reload.status = closed_status
+        @issue1.save!
+      end
+
+    end
+
+
+    context "change the status of parent when some children are open" do
+      should "to the default status if the Reopened Parent Issue Status setting is blank" do
+        with_settings :reopened_parent_issue_status => "" do
+          create_family_of_issues 'Changing status of parent from closed to open when some of children is open.'
+
+          open_status   = issue_statuses( :issue_statuses_001)
+          closed_status = issue_statuses( :issue_statuses_005)
+
+          @issue3.status = closed_status
+          @issue2.status = closed_status
+          @issue1.status = closed_status
+          assert @issue3.save
+          assert @issue2.save
+          assert @issue1.save
+          assert @issue1.reload.closed?
+          assert @issue2.reload.closed?
+          assert @issue3.reload.closed?
+
+          # set status of children to open status. this should update status
+          # of parent and set it to open state.
+          @issue2.status = open_status
+          assert @issue2.save
+          assert !@issue2.reload.closed?
+          assert !@issue1.reload.closed?
+          assert_equal IssueStatus.default, @issue1.status
+        end
+      end
+
+      should "to the configured Reopened Parent Issue Status" do
+        configured_status = IssueStatus.find(4)
+        assert !configured_status.is_closed?
+
+        with_settings :reopened_parent_issue_status => configured_status.id.to_s do
+          create_family_of_issues 'Changing status of parent from closed to open when some of children is open.'
+
+          open_status   = issue_statuses( :issue_statuses_001)
+          closed_status = issue_statuses( :issue_statuses_005)
+
+          @issue3.status = closed_status
+          @issue2.status = closed_status
+          @issue1.status = closed_status
+          assert @issue3.save
+          assert @issue2.save
+          assert @issue1.save
+          assert @issue1.reload.closed?
+          assert @issue2.reload.closed?
+          assert @issue3.reload.closed?
+
+          # set status of children to open status. this should update status
+          # of parent and set it to open state.
+          @issue2.status = open_status
+          assert @issue2.save
+          assert !@issue2.reload.closed?
+          assert !@issue1.reload.closed?
+          assert_equal configured_status, @issue1.status
+        end
+      end
+    end
+
+    should "update Target Version of parent if the children have a bigger target version" do
+      create_family_of_issues 'Update target version of parent if children have bigger target version.'
+
+      # set parent version to 1.
+      @issue1.fixed_version = versions( :versions_003)
+      assert @issue1.save
+      assert @issue1.reload.fixed_version == versions( :versions_003)
+
+      # set children to version higher that parent.
+      @issue2.fixed_version = versions( :versions_009)
+      assert @issue2.save
+      assert @issue1.reload.fixed_version == versions( :versions_009)
+    end
+
+    should "set target version of parent if children have a target version" do
+      create_family_of_issues 'Update target version of parent if children have a target version.'
+
+      @issue2.fixed_version = versions( :versions_003)
+      assert @issue2.save, @issue2.errors.full_messages
+      assert @issue2.reload.fixed_version == versions( :versions_003)
+      assert @issue1.reload.fixed_version == @issue2.fixed_version
+    end
+
+    should "not allow to set target version of parent lower than any of the children" do
+      create_family_of_issues 'Not allowing to set target version of parent lower than any of the children.'
+
+      [ @issue1, @issue2, @issue3 ].each do |issue|
+        issue.update_attribute :fixed_version, versions( :versions_002)
+      end
+
+      assert_raise ActiveRecord::RecordInvalid do
+        @issue1.fixed_version = versions( :versions_001)
+        @issue1.save!
+      end
+    end
+
+    should "not set target version of parent if child on another project" do
+      create_family_of_issues 'Should not set target version of parnet if child on another project.'
+
+      @issue2.fixed_version = versions( :versions_003)
+      assert @issue2.save
+      assert @issue1.reload.fixed_version == versions( :versions_003)
+
+      online_store = projects( :projects_002)
+      assert @issue2.move_to( online_store)
+      # Need to retrieve the record again to bust the
+      # @assignable_versions cache
+      @issue2 = Issue.find(@issue2.id)
+      @issue2.fixed_version = versions( :onlinestore_1_0)
+      assert @issue2.save, @issue2.errors.full_messages
+      assert @issue1.reload.fixed_version == versions( :versions_003)
+      assert @issue2.reload.fixed_version == versions( :onlinestore_1_0)
+    end
+
+  end
+
+  def test_should_update_due_to_date_if_target_version_is_set_but_due_to_is_not
+    @issue = Issue.new( :project_id => 1, :tracker_id => 1,
+                        :author_id => 1, :status_id => 1,
+                        :priority => IssuePriority.first,
+                        :subject => 'issue for test hook which set due_to when sets target version.',
+                        :description => 'issue for test hook which set due_to when sets target version.')
+
+    assert @issue.save
+    assert @issue.reload.due_date == nil
+    @issue.fixed_version = versions(:versions_003)
+    assert @issue.save
+    assert @issue.reload.due_date == @issue.reload.fixed_version.due_date
+  end
+
+  def test_settings_delete_children_on
+    with_settings :delete_children => "1" do
+      @root = issues( :issues_root)
+      children_before_delete = @root.children.clone
+      assert @root.destroy, "failed to destroy parent issue"
+      assert_raise ActiveRecord::RecordNotFound do
+        children_before_delete.each( &:reload)
+      end
+    end
+  end
+
+  def test_settings_delete_children_off
+    with_settings :delete_children => "0" do
+      @root = issues( :issues_root)
+      children_before_delete = @root.children.clone
+      assert @root.destroy, "failed to destroy parent issue"
+      assert_nothing_raised do
+        children_before_delete.each( &:reload)
+      end
+    end
+  end
+
+  def test_should_not_change_target_version_if_children_from_another_project
+    with_settings :cross_project_issue_relations => true do
+      @root = issues( :issues_root)
+      @issue_another_project = issues( :issue_leaf_from_another_project)
+
+      older_version = versions( :versions_001)
+      newer_version = versions( :onlinestore_1_0)
+      @root.update_attribute :fixed_version,  older_version
+      @issue_another_project.move_to_child_of @root
+      assert @root.reload.fixed_version == older_version
+    end
+  end
+
+  context "Issue#estimated_hours" do
+    context "on a leaf" do
+      should "return the attribute" do
+        issue = Issue.generate_for_project!(Project.find(1), :subject => 'is a leaf', :estimated_hours => 10.0)
+        assert_equal 10, issue.estimated_hours
+      end
+    end
+
+    context "not a leaf (has child issues)" do
+      should "total the estimated hours of the children" do
+        @issue1 = Issue.generate_for_project!(Project.find(1), :subject => 'parent', :estimated_hours => 5.0)
+        @issue2 = Issue.generate_for_project!(Project.find(1), :subject => 'parent 2', :estimated_hours => 10.0)
+        @issue3 = Issue.generate_for_project!(Project.find(1), :subject => 'parent', :estimated_hours => 20.0)
+        @issue4 = Issue.generate_for_project!(Project.find(1), :subject => 'parent', :estimated_hours => 20.0)
+        @issue5 = Issue.generate_for_project!(Project.find(1), :subject => 'parent', :estimated_hours => nil)
+
+        @issue2.move_to_child_of @issue1
+        @issue3.move_to_child_of @issue2
+        @issue4.move_to_child_of @issue2
+        @issue5.move_to_child_of @issue2
+
+        [@issue1, @issue2, @issue3, @issue4, @issue5].each {|i| i.reload }
+
+        assert_equal nil, @issue5.estimated_hours # Leaf
+        assert_equal 20, @issue4.estimated_hours # Leaf
+        assert_equal 20, @issue3.estimated_hours # Leaf
+        assert_equal 40, @issue2.estimated_hours # Parent with two
+        assert_equal 40, @issue1.estimated_hours # Parent with two
+
+      end
+    end
+  end
+
+  context "#parent_id=" do
+    setup do
+      @issue1 = Issue.generate_for_project!(Project.find(1), :subject => 'parent')
+      @issue2 = Issue.generate_for_project!(Project.find(1), :subject => 'child')
+    end
+
+    should "set the parent issue by id" do
+      @issue1.parent_id=(@issue2.id)
+
+      assert_equal @issue2.id, @issue1.parent_id
+      assert_equal @issue2, @issue1.parent
+    end
+
+    should "not allow setting the parent issue to itself" do
+      @issue1.parent_id=(@issue1.id)
+
+      assert_equal nil, @issue1.parent_id
+      assert_equal nil, @issue1.parent
+
+    end
+  end
+
+  private
+
+  def create_family_of_issues( subject)
+    project = Project.find(1)
+    @issue1 = Issue.generate_for_project!(project, :subject => subject, :description => subject)
+    @issue2 = Issue.generate_for_project!(project, :subject => subject, :description => subject)
+    @issue3 = Issue.generate_for_project!(project, :subject => subject, :description => subject)
+
+    # 2 is a child of 1
+    @issue2.move_to_child_of @issue1
+
+    # And 3 is a child of 2
+    @issue3.move_to_child_of @issue2
+
+    @issue1.reload
+    @issue2.reload
+    @issue3.reload
+
+    assert @issue2.parent == @issue1
+    assert @issue2.children.include?( @issue3)
+  end
+
 end

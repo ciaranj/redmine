@@ -275,6 +275,15 @@ class IssuesControllerTest < ActionController::TestCase
   end
 
   def test_gantt
+    parent_issue = Issue.find(14)
+    parent_issue.update_attributes(:start_date => 1.day.ago.to_date)
+    parent_issue.reload
+    assert_not_nil parent_issue.due_date
+    assert_nil parent_issue.read_attribute(:due_date)
+
+    subissue = Issue.generate_for_project!(Project.find(1), :start_date => 1.day.ago.to_date, :due_date => 10.days.from_now.to_date)
+    subissue.move_to_child_of Issue.find(14)
+
     get :gantt, :project_id => 1
     assert_response :success
     assert_template 'gantt.rhtml'
@@ -282,9 +291,12 @@ class IssuesControllerTest < ActionController::TestCase
     events = assigns(:gantt).events
     assert_not_nil events
     # Issue with start and due dates
+    assert events.include?(subissue)
     i = Issue.find(1)
     assert_not_nil i.due_date
     assert events.include?(Issue.find(1))
+    # Parent issue with a child with a start and due date
+    assert events.include?(Issue.find(14))
     # Issue with without due date but targeted to a version with date
     i = Issue.find(2)
     assert_nil i.due_date
@@ -500,7 +512,38 @@ class IssuesControllerTest < ActionController::TestCase
     assert_tag :tag => 'div', :attributes => { :class => /error/ },
                               :content => /No tracker/
   end
-  
+
+  context "GET to :new" do
+    context "with a parent_id" do
+      setup do
+        @request.session[:user_id] = 3
+      end
+
+      should "set the parent issue" do
+        get :new, :project_id => 1, :issue => {:parent_id => 1}
+        assert_response :success
+        assert_template 'new'
+        assert_equal Issue.find(1), assigns(:parent_issue)
+      end
+
+      should "not set the parent issue if the parameter points to a missing issue" do
+        get :new, :project_id => 1, :issue => {:parent_id => 1_000_000}
+        assert_response :success
+        assert_template 'new'
+        assert_equal nil, assigns(:parent_issue)
+      end
+
+      should "not set the parent issue if the parameter points to an unauthorized issue" do
+        issue = Issue.generate_for_project!(Project.find(5))
+        get :new, :project_id => 1, :issue => {:parent_id => issue.id}
+        assert_response :success
+        assert_template 'new'
+        assert_equal nil, assigns(:parent_issue)
+      end
+    end
+
+  end
+
   def test_update_new_form
     @request.session[:user_id] = 2
     xhr :post, :update_form, :project_id => 1,
@@ -932,6 +975,20 @@ class IssuesControllerTest < ActionController::TestCase
                           :content => notes
     assert_tag :input, :attributes => { :name => 'time_entry[hours]', :value => "2z" }
   end
+
+  def test_post_edit_with_parent_id_set_to_self
+    issue = Issue.find(1)
+    assert_equal nil, issue.parent
+    @request.session[:user_id] = 2
+
+    post :edit,
+         :id => 1,
+         :issue => { :parent_id => 1}
+
+    assert_redirected_to :action => 'show', :id => '1'
+    issue.reload
+    assert_equal nil, issue.parent
+  end
   
   def test_post_edit_should_allow_fixed_version_to_be_set_to_a_subproject
     issue = Issue.find(2)
@@ -1235,6 +1292,18 @@ class IssuesControllerTest < ActionController::TestCase
                                              :class => 'icon-del' }
   end
 
+  test 'context_menu with a parent issue' do
+    @request.session[:user_id] = 2
+    @issue = Issue.generate_for_project!(Project.find(1), :subject => 'test')
+    @issue.move_to_child_of Issue.find(1)
+
+    get :context_menu, :ids => [1]
+
+    assert_response :success
+    assert_template 'context_menu'
+    assert_select 'a[class*=disabled]', :text => /0%/
+  end
+
   def test_context_menu_one_issue_by_anonymous
     get :context_menu, :ids => [1]
     assert_response :success
@@ -1267,6 +1336,18 @@ class IssuesControllerTest < ActionController::TestCase
     assert_tag :tag => 'a', :content => 'Delete',
                             :attributes => { :href => '/issues/destroy?ids%5B%5D=1&amp;ids%5B%5D=2',
                                              :class => 'icon-del' }
+  end
+
+  test 'context_menu with multiple issues and a parent issue' do
+    @request.session[:user_id] = 2
+    @issue = Issue.generate_for_project!(Project.find(1), :subject => 'test')
+    @issue.move_to_child_of Issue.find(1)
+
+    get :context_menu, :ids => [1,2]
+
+    assert_response :success
+    assert_template 'context_menu'
+    assert_select 'a[class*=disabled]', :text => /0%/
   end
 
   def test_context_menu_multiple_issues_of_different_project
@@ -1334,5 +1415,268 @@ class IssuesControllerTest < ActionController::TestCase
     assert_tag :div, :attributes => {:id => 'quick-search'},
                      :child => {:tag => 'form',
                                 :child => {:tag => 'input', :attributes => {:name => 'issues', :type => 'hidden', :value => '1'}}}
+  end
+
+  def test_new_child_issue
+    child_issue_subject = "This is the test_new child issue"
+    parent_issue = issues( :issues_root)
+    @request.session[:user_id] = 2
+
+    post( :new, :project_id => 1,
+          :parent_issue => parent_issue,
+          :issue => {:tracker_id => 3,
+            :subject => child_issue_subject,
+            :description => 'This is the description',
+            :priority_id => 5,
+            :parent_id => parent_issue.id.to_s,
+            :estimated_hours => '',
+            :custom_field_values => {'2' => 'Value for field 2'}})
+    child = Issue.find_by_subject( child_issue_subject)
+
+    assert_redirected_to "issues/#{child.id}"
+    assert( child.parent == parent_issue,
+            "New child has Issue id=#{child.parent} as parent, not id=#{parent_issue}")
+  end
+
+  def test_edit_issue_set_parent
+    parent_issue = issues( :issues_root)
+    moving_issue = issues( :issues_subchild003)
+    @request.session[:user_id] = 2
+
+    post( :edit,
+          :id => moving_issue.id,
+          :project_id => 1,
+          :parent_issue => parent_issue,
+          :issue => {
+            :parent_id => parent_issue.id
+          })
+    assert_redirected_to :action => 'show', :id => moving_issue.id
+    assert moving_issue.reload.parent == parent_issue
+  end
+
+  def test_move_child_to_root
+    parent = issues( :issues_root)
+    child = issues( :issues_child001)
+
+    post( :edit,
+          :id => child.id,
+          :project_id => 1,
+          :issue => {
+            :parent_id => "",
+          })
+    assert_redirected_to :controller => 'issues', :action => 'show', :id => child.id
+    assert child.reload.root?
+  end
+
+  def test_add_subissue_should_redirect_to_action_new
+    @request.session[:user_id] = 2
+    get( :add_subissue, :project_id => 1,
+         :issue => {
+           :tracker_id      => 3,
+           :priority_id     => 5,
+           :subject         => "test_add_subissue",
+           :description     => "test_add_subissue",
+           :estimated_hours => '' },
+         :parent_issue_id => 1)
+    assert_redirected_to :controller => 'issues', :action => "new", :project_id => Project.find(1).to_param, :issue => {:parent_id => 1}
+  end
+
+  def test_add_subissue_with_invalid_parent_id_should_render_404
+    @request.session[:user_id] = 2
+    get( :add_subissue, :project_id => 1,
+         :issue => {
+           :tracker_id => 3,
+           :subject => "test_add_subissue",
+           :description => "test_add_subissue",
+           :priority_id => 5,
+           :estimated_hours => ''},
+         :parent_issue_id => 'invalid_id')
+    assert_template 'common/404', :status => 404
+  end
+
+  def test_add_subissue_with_a_private_parent_issue
+    @request.session[:user_id] = 3 # can't access Project 5
+    get( :add_subissue, :project_id => 5,
+         :issue => {
+           :tracker_id      => 3,
+           :priority_id     => 5,
+           :subject         => "test_add_private_subissue",
+           :description     => "test_add_private_subissue",
+           :estimated_hours => '' },
+         :parent_issue_id => 6)
+    assert_template 'common/404', :status => 404
+  end
+
+  def test_index_view_option_always_show_parents
+    @private_issue = Issue.find(4)
+    @child_issue = Issue.find(15)
+    @child_issue.move_to_child_of(@private_issue)
+
+    @request.session[:user_id] = 3
+    get( :index,
+         :project_id => 1,
+         :set_filter => 1,
+         :view_options => { :show_parents => "show_always"})
+    assert_response :success
+
+    assert_select 'table.issues' do
+      assert_select 'span.issue-subject-in-tree.issue-level-1', /child001/
+      assert_select 'span.issue-subject-in-tree.issue-level-2', /subchild001/
+      assert_select 'span', /root/
+
+      # Hidden issue on a private project
+      assert_select 'tr#issue-4', :count => 0
+      assert_select 'td.subject', :text => /Issue on project 2/, :count => 0
+      assert_select 'tr.private-issue .issue-subject', /Private/
+    end
+  end
+
+  def test_index_view_option_organize_by_parent
+    @private_issue = Issue.find(4)
+    @child_issue = Issue.find(15)
+    @child_issue.move_to_child_of(@private_issue)
+
+    @request.session[:user_id] = 3
+    get( :index,
+         :project_id => 1,
+         :set_filter => 1,
+         :view_options => { :show_parents => "organize_by_parent"})
+    assert_response :success
+
+    assert_select 'table.issues' do
+      assert_select '.issue-subject-in-tree.issue-level-1', /child001/
+      assert_select '.issue-subject-in-tree.issue-level-1', /child002/
+      assert_select '.issue-subject-in-tree.issue-level-2', /subchild001/
+      assert_select '.issue-subject-in-tree.issue-level-2', /subchild002/
+      assert_select 'tr.private-issue .issue-subject', /Private/
+    end
+  end
+
+  context "#auto_complete_for_issue_parent without authorization" do
+    setup do
+      @request.session[:user_id] = 3
+      get :auto_complete_for_issue_parent, :project_id => 2
+    end
+
+    should_respond_with 403
+  end
+
+  context "#auto_complete_for_issue_parent with authorization" do
+    setup do
+      @request.session[:user_id] = 3
+    end
+
+    context "with a missing phrase" do
+      setup do
+        get :auto_complete_for_issue_parent, :project_id => 1
+      end
+
+      should_respond_with :success
+
+      should "have an hidden content body" do
+        assert_select 'li[style*=?]', /display:none/
+      end
+    end
+
+    context "with an issue number for the project" do
+      setup do
+        get :auto_complete_for_issue_parent, :project_id => 1, :issue_parent => '3'
+      end
+
+      should_respond_with :success
+
+      should "have the matching issue in the content body" do
+        assert_select 'ul' do
+          assert_select 'li#3', /#{Issue.find(3).subject}/
+        end
+      end
+    end
+
+    context "with it's own issue number" do
+      setup do
+        get :auto_complete_for_issue_parent, :id => '3', :project_id => 1, :issue_parent => '3'
+      end
+
+      should_respond_with :success
+
+      should "not show it's own issue as a result" do
+        assert_select 'ul' do
+          assert_select 'li#3', :count => 0
+        end
+      end
+    end
+
+    context "with a cross project issue number" do
+      setup do
+        Setting.cross_project_issue_relations = '1'
+        get :auto_complete_for_issue_parent, :project_id => 1, :issue_parent => '5'
+      end
+
+      should_respond_with :success
+
+      should "have the matching issue in the content body" do
+        assert_select 'ul' do
+          assert_select 'li#5', /#{Issue.find(5).subject}/
+        end
+      end
+    end
+
+    context "searching by subject and description" do
+      setup do
+        get :auto_complete_for_issue_parent, :project_id => 1, :issue_parent => 'issue'
+      end
+
+      should_respond_with :success
+
+      should "have the matching issues in the content body" do
+        assert_select 'ul' do
+          assert_select 'li', :count => 7
+        end
+      end
+
+    end
+
+    context "searching to unauthorized projects by issue id" do
+      setup do
+        get :auto_complete_for_issue_parent, :project_id => 1, :issue_parent => '4'
+      end
+
+      should_respond_with :success
+
+      should "not contain the unauthorized issues" do
+        assert_select 'ul' do
+          assert_select 'li#4', :count => 0
+        end
+      end
+
+    end
+
+    context "searching to unauthorized projects by subject and description" do
+      setup do
+        get :auto_complete_for_issue_parent, :project_id => 1, :issue_parent => 'issue on project 2'
+      end
+
+      should_respond_with :success
+
+      should "not contain the unauthorized issues" do
+        assert_select 'ul' do
+          assert_select 'li', :count => 7
+          assert_select 'li', :count => 0, :text => /issue on project 2/
+        end
+      end
+
+    end
+
+    should "limit results to 10 records" do
+      Setting.cross_project_issue_relations = '1'
+      get :auto_complete_for_issue_parent, :project_id => 1, :issue_parent => 'e'
+
+      assert_response :success
+      assert_select 'ul' do
+        assert_select 'li', :count => 10
+      end
+    end
+
+
   end
 end

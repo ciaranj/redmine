@@ -46,6 +46,8 @@ class ProjectsController < ApplicationController
   helper :repositories
   include RepositoriesHelper
   include ProjectsHelper
+  helper :versions
+  include VersionsHelper
   
   # Lists visible projects
   def index

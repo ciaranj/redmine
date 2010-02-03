@@ -180,3 +180,15 @@ start_of_week:
   default: ''
 rest_api_enabled:
   default: 0
+delete_children:
+  default: 1
+subissues_list_columns:
+  serialized: true
+  default:
+  - id
+  - subject
+  - status
+  - start_date
+  - due_date
+reopened_parent_issue_status:
+  default: ''

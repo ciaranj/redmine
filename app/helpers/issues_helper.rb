@@ -96,6 +96,15 @@ module IssuesHelper
       when 'estimated_hours'
         value = "%0.02f" % detail.value.to_f unless detail.value.blank?
         old_value = "%0.02f" % detail.old_value.to_f unless detail.old_value.blank?
+      when 'parent_id'
+        if detail.value && i = Issue.visible.find_by_id(detail.value)
+          value = i.subject
+        end
+
+        if detail.old_value && i = Issue.visible.find_by_id(detail.old_value)
+          old_value = i.subject
+        end
+        label = l(:field_parent_issue)
       end
     when 'cf'
       custom_field = CustomField.find_by_id(detail.prop_key)
@@ -195,5 +204,18 @@ module IssuesHelper
       end
     end
     export
+  end
+
+  def auto_complete_result_parent_issue(candidates, phrase)
+    if candidates.present?
+      candidates.map! do |c|
+        content_tag("li",
+                    highlight( c.to_s, phrase),
+                    :id => String( c[:id]))
+      end
+    else
+      candidates = [content_tag(:li, l(:label_none), :style => 'display:none')]
+    end
+    content_tag("ul", candidates.uniq)
   end
 end

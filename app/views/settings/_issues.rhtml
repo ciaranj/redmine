@@ -8,11 +8,20 @@
 <p><%= setting_select :issue_done_ratio, Issue::DONE_RATIO_OPTIONS.collect {|i| [l("setting_issue_done_ratio_#{i}"), i]} %></p>
 
 <p><%= setting_text_field :issues_export_limit, :size => 6 %></p>
+
+<p><%= setting_select :delete_children, [ [l(:general_text_Yes), "1" ], [l(:general_text_No),  "0" ] ] %></p>
+
+<p><%= setting_select :reopened_parent_issue_status, [["", 0]] + IssueStatus.all(:order => 'position ASC').collect{|status| [status.name, status.id.to_s]} %></p>
 </div>
 
 <fieldset class="box settings"><legend><%= l(:setting_issue_list_default_columns) %></legend>
 <%= setting_multiselect(:issue_list_default_columns, 
         Query.new.available_columns.collect {|c| [c.caption, c.name.to_s]}, :label => false) %>
+</fieldset>
+
+
+<fieldset class="box settings"><legend><%= l(:setting_subissues_list_columns) %></legend>
+<%= setting_multiselect(:subissues_list_columns, Query.new.available_columns.collect {|c| [c.caption, c.name.to_s]}, :label => false) %>
 </fieldset>
 
 <%= submit_tag l(:button_save) %>

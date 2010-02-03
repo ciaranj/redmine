@@ -1,0 +1,14 @@
+<%-
+parents_on_first_lvl = []
+issues.each do |i|
+  if i.parent
+    first_parent = i.root
+  else
+    first_parent = i
+  end
+  parents_on_first_lvl += [ first_parent ] unless parents_on_first_lvl.include?( first_parent)
+end
+
+parents_on_first_lvl.each do |parent| -%>
+<%= issues_family_content( parent, issues, query, emphasis_issues) %>
+<% end -%>

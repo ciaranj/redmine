@@ -52,7 +52,7 @@ function addFileField() {
     d.type = "text";
     d.name = "attachments[" + fileFieldCount + "][description]";
     d.size = 60;
-    
+
     p = document.getElementById("attachments_fields");
     p.appendChild(document.createElement("br"));
     p.appendChild(f);
@@ -192,6 +192,25 @@ function randomKey(size) {
   	key += chars[Math.floor(Math.random() * chars.length)];
 	}
 	return key;
+}
+
+function clearValues(dom_ids) {
+  dom_ids.each(function(dom_id) {
+    $(dom_id).value = '';
+  });
+}
+
+function observeParentIssueField(url) {
+  new Ajax.Autocompleter('parent_issue',
+                         'parent_issue_candidates',
+                         url,
+                         {
+                           minChars: 1,
+                           frequency: 0.5,
+                           paramName: 'issue_parent',
+                           afterUpdateElement: function(element, value) {
+                             document.getElementById('issue_parent_id').value = value.id;
+                           }});
 }
 
 /* shows and hides ajax indicator */

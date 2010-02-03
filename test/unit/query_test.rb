@@ -63,7 +63,7 @@ class QueryTest < ActiveSupport::TestCase
     query.add_filter('estimated_hours', '!*', [''])
     issues = find_issues_with_query(query)
     assert !issues.empty?
-    assert issues.all? {|i| !i.estimated_hours}
+    assert issues.all? {|i| !i.read_attribute(:estimated_hours)}
   end
 
   def test_operator_all

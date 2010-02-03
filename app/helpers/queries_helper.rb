@@ -27,13 +27,13 @@ module QueriesHelper
                       content_tag('th', column.caption)
   end
   
-  def column_content(column, issue)
+  def column_content(column, issue, query = nil)
     value = column.value(issue)
     
     case value.class.name
     when 'String'
       if column.name == :subject
-        link_to(h(value), :controller => 'issues', :action => 'show', :id => issue)
+        subject_in_tree( issue, issue.subject, query)
       else
         h(value)
       end
@@ -61,4 +61,94 @@ module QueriesHelper
       h(value)
     end
   end
+
+  def subject_in_tree(issue, value, query)
+    if query.view_options['show_parents'] == ViewOption::SHOW_PARENTS[:never]
+      content_tag('div', subject_text(issue, value), :class=>'issue-subject')
+    else
+      css_style = "margin-left: #{issue.level}em;" # Used to indent
+      content_tag('span',
+                  content_tag('div',
+                              subject_text(issue, value),
+                              :class=>'issue-subject',
+                              :style => css_style),
+                  :class => issue.level > 0 ? "issue-subject-in-tree issue-level-#{issue.level}" : '',
+                  :style => css_style)
+    end
+  end
+
+  def subject_text(issue, value)
+    if issue.visible?
+      subject_text = link_to(h(value), :controller => 'issues', :action => 'show', :id => issue)
+      h((@project.nil? || @project != issue.project) ? "#{issue.project.name} - " : '') + subject_text
+    else
+      h(value)
+    end
+  end
+
+  def issue_content(issue, query, options = { })
+    row_classes = ['issue','hascontextmenu', issue.css_classes, cycle('odd', 'even')]
+    row_classes << 'issue-unfiltered' if options[:unfiltered]
+    row_classes << 'issue-emphasis' if options[:emphasis]
+
+    inner_content = returning '' do |content|
+      content << content_tag(:td, check_box_tag("ids[]", issue.id, false, :id => nil), :class => 'checkbox')
+      content << content_tag(:td, link_to(issue.id, :controller => 'issues', :action => 'show', :id => issue))
+
+      query.columns.each do |column|
+        content << content_tag( 'td', column_content(column, issue, query), :class => column.name)
+      end
+    end
+
+    content_tag(:tr,
+                inner_content,
+                :id => "issue-#{issue.id}",
+                :class => row_classes.join(' '))
+  end
+
+  def private_issue_content(issue, query, options = { })
+    row_classes = ['issue', 'private-issue',cycle('odd', 'even')]
+    row_classes << 'issue-unfiltered' if options[:unfiltered]
+    row_classes << 'issue-emphasis' if options[:emphasis]
+
+    inner_content = returning '' do |content|
+      content << content_tag(:td, check_box_tag("ids[]", '', false, :id => nil), :class => 'checkbox')
+      content << content_tag(:td, l(:text_private))
+
+      query.columns.each do |column|
+        if column.name == :subject
+          # Need to indent
+          content << content_tag('td', subject_in_tree(issue, l(:text_private), query), :class => column.name)
+        else
+          content << content_tag( 'td', l(:text_private), :class => column.name)
+        end
+      end
+    end
+
+    content_tag(:tr,
+                inner_content,
+                :id => "",
+                :class => row_classes.join(' '))
+
+  end
+
+  def issues_family_content( parent, issues_to_show, query, emphasis_issues)
+    html = ""
+    if parent.visible?
+      html << issue_content( parent, query, :unfiltered => !( issues_to_show.include? parent),
+                             :emphasis => ( emphasis_issues ? emphasis_issues.include?( parent) : false))
+    else
+      html << private_issue_content( parent, query, :unfiltered => !( issues_to_show.include? parent),
+                                     :emphasis => ( emphasis_issues ? emphasis_issues.include?( parent) : false))
+    end
+    unless  parent.children.empty?
+      parent.children.each do |child|
+        if issues_to_show.include?( child) || issues_to_show.detect { |i| i.ancestors.include? child }
+          html << issues_family_content( child, issues_to_show, query, emphasis_issues)
+        end
+      end
+    end
+    html
+  end
+
 end

@@ -16,6 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class Version < ActiveRecord::Base
+  include Comparable
+
   before_destroy :check_integrity
   after_update :update_issues_from_sharing_change
   belongs_to :project

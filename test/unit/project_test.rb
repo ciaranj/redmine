@@ -97,6 +97,9 @@ class ProjectTest < ActiveSupport::TestCase
   end
   
   def test_archive
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     user = @ecookbook.members.first.user
     @ecookbook.archive
     @ecookbook.reload
@@ -120,6 +123,9 @@ class ProjectTest < ActiveSupport::TestCase
   end
   
   def test_unarchive
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     user = @ecookbook.members.first.user
     @ecookbook.archive
     # A subproject of an archived project can not be unarchived
@@ -136,6 +142,9 @@ class ProjectTest < ActiveSupport::TestCase
   end
   
   def test_destroy
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     # 2 active members
     assert_equal 2, @ecookbook.members.size
     # and 1 is locked
@@ -237,7 +246,7 @@ class ProjectTest < ActiveSupport::TestCase
     
     # Move project out of the issue's hierarchy
     moved_project = Project.find(3)
-    moved_project.set_parent!(Project.find(2))
+    assert moved_project.set_parent!(Project.find(2))
     parent_issue.reload
     issue_with_local_fixed_version.reload
     issue_with_hierarchy_fixed_version.reload
@@ -309,12 +318,17 @@ class ProjectTest < ActiveSupport::TestCase
   end
   
   def test_rolled_up_trackers_should_ignore_archived_subprojects
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     parent = Project.find(1)
     parent.trackers = Tracker.find([1,2])
     child = parent.children.find(3)
     child.trackers = Tracker.find([1,3])
-    parent.children.each(&:archive)
-    
+    parent.children.each do |child|
+      assert child.archive, "Project #{child} did not archive"
+    end
+
     assert_equal [1,2], parent.rolled_up_trackers.collect(&:id)
   end
   
@@ -373,26 +387,29 @@ class ProjectTest < ActiveSupport::TestCase
     child = parent.children.find(3)
     private_child = parent.children.find(5)
     
-    assert_equal [1,2,3], parent.version_ids.sort
+    assert_equal [1,2,3,9], parent.version_ids.sort
     assert_equal [4], child.version_ids
     assert_equal [6], private_child.version_ids
     assert_equal [7], Version.find_all_by_sharing('system').collect(&:id)
 
-    assert_equal 6, parent.shared_versions.size
+    assert_equal 7, parent.shared_versions.size
     parent.shared_versions.each do |version|
       assert_kind_of Version, version
     end
 
-    assert_equal [1,2,3,4,6,7], parent.shared_versions.collect(&:id).sort
+    assert_equal [1,2,3,4,6,7,9], parent.shared_versions.collect(&:id).sort
   end
 
   def test_shared_versions_should_ignore_archived_subprojects
+    # Remove the an open issue on a version
+    Issue.destroy(20)
+
     parent = Project.find(1)
     child = parent.children.find(3)
-    child.archive
+    assert child.archive
     parent.reload
     
-    assert_equal [1,2,3], parent.version_ids.sort
+    assert_equal [1,2,3,9], parent.version_ids.sort
     assert_equal [4], child.version_ids
     assert !parent.shared_versions.collect(&:id).include?(4)
   end
@@ -402,12 +419,12 @@ class ProjectTest < ActiveSupport::TestCase
     parent = Project.find(1)
     child = parent.children.find(5)
     
-    assert_equal [1,2,3], parent.version_ids.sort
+    assert_equal [1,2,3,9], parent.version_ids.sort
     assert_equal [6], child.version_ids
 
     versions = parent.shared_versions.visible(user)
     
-    assert_equal 4, versions.size
+    assert_equal 5, versions.size
     versions.each do |version|
       assert_kind_of Version, version
     end
@@ -567,7 +584,6 @@ class ProjectTest < ActiveSupport::TestCase
       assert_equal @source_project.issues.size, @project.issues.size
       @project.issues.each do |issue|
         assert issue.valid?
-        assert ! issue.assigned_to.blank?
         assert_equal @project, issue.project
       end
       
@@ -581,7 +597,7 @@ class ProjectTest < ActiveSupport::TestCase
       User.current = User.find(1)
       assigned_version = Version.generate!(:name => "Assigned Issues", :status => 'open')
       @source_project.versions << assigned_version
-      assert_equal 3, @source_project.versions.size
+      assert_equal 4, @source_project.versions.size
       Issue.generate_for_project!(@source_project,
                                   :fixed_version_id => assigned_version.id,
                                   :subject => "change the new issues to use the copied version",

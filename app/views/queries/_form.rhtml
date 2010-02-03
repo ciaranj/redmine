@@ -22,6 +22,14 @@
 
 <p><label for="query_group_by"><%= l(:field_group_by) %></label>
 <%= select 'query', 'group_by', @query.groupable_columns.collect {|c| [c.caption, c.name.to_s]}, :include_blank => true %></p>
+
+<% @query.view_options.each_key do |voption| -%>
+<p><label><%= @query.caption_for_view_option(voption) %></label>
+<%= select_tag("view_options[#{voption}]", options_for_select(@query.values_for_view_option(voption), @query.view_options[voption])) %></p>
+<% end %>
+
+<p><label for="query_group_by"><%= l(:field_group_by) %></label>
+<%= select 'query', 'group_by', @query.groupable_columns.collect {|c| [c.caption, c.name.to_s]}, :include_blank => true %></p>
 </div>
 
 <fieldset><legend><%= l(:label_filter_plural) %></legend>

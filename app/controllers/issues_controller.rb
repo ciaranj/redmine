@@ -21,9 +21,12 @@ class IssuesController < ApplicationController
   
   before_filter :find_issue, :only => [:show, :edit, :reply]
   before_filter :find_issues, :only => [:bulk_edit, :move, :destroy]
-  before_filter :find_project, :only => [:new, :update_form, :preview]
-  before_filter :authorize, :except => [:index, :changes, :gantt, :calendar, :preview, :context_menu]
+  before_filter :find_project, :only => [:new, :update_form, :preview, :add_subissue, :auto_complete_for_issue_parent]
+  before_filter :authorize, :except => [:index, :changes, :gantt, :calendar, :preview, :context_menu, :add_subissue]
   before_filter :find_optional_project, :only => [:index, :changes, :gantt, :calendar]
+  before_filter :find_parent_issue, :only => [:add_subissue]
+  before_filter :find_optional_parent_issue, :only => [:new, :update_form]
+
   accept_key_auth :index, :show, :changes
 
   rescue_from Query::StatementInvalid, :with => :query_statement_invalid
@@ -46,6 +49,7 @@ class IssuesController < ApplicationController
   include IssuesHelper
   helper :timelog
   include Redmine::Export::PDF
+  include ActionView::Helpers::PrototypeHelper
 
   verify :method => :post,
          :only => :destroy,
@@ -103,6 +107,7 @@ class IssuesController < ApplicationController
   end
   
   def show
+    retrieve_query_for_subissues
     @journals = @issue.journals.find(:all, :include => [:user, :details], :order => "#{Journal.table_name}.created_on ASC")
     @journals.each_with_index {|j,i| j.indice = i+1}
     @journals.reverse! if User.current.wants_comments_in_reverse_order?
@@ -152,6 +157,7 @@ class IssuesController < ApplicationController
       # Check that the user is allowed to apply the requested status
       @issue.status = (@allowed_statuses.include? requested_status) ? requested_status : default_status
       call_hook(:controller_issues_new_before_save, { :params => params, :issue => @issue })
+      @issue.parent_id = params[:issue][:parent_id] if params[:issue]
       if @issue.save
         attach_files(@issue, params[:attachments])
         flash[:notice] = l(:notice_successful_create)
@@ -186,6 +192,8 @@ class IssuesController < ApplicationController
     end
 
     if request.post?
+      @issue.parent_id = params[:issue][:parent_id] if params[:issue] && params[:issue][:parent_id]
+      
       @time_entry = TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => Date.today)
       @time_entry.attributes = params[:time_entry]
       if (@time_entry.hours.nil? || @time_entry.valid?) && @issue.valid?
@@ -211,6 +219,12 @@ class IssuesController < ApplicationController
     flash.now[:error] = l(:notice_locking_conflict)
     # Remove the previously added attachments if issue was not updated
     attachments.each(&:destroy)
+  end
+
+  def add_subissue
+    redirect_to :action => 'new',
+                :project_id => @parent_issue.project,
+                :issue => { :parent_id => @parent_issue.id }
   end
 
   def reply
@@ -370,10 +384,25 @@ class IssuesController < ApplicationController
                               :order => "start_date, effective_date",
                               :conditions => ["(((start_date>=? and start_date<=?) or (effective_date>=? and effective_date<=?) or (start_date<? and effective_date>?)) and start_date is not null and due_date is null and effective_date is not null)", @gantt.date_from, @gantt.date_to, @gantt.date_from, @gantt.date_to, @gantt.date_from, @gantt.date_to]
                               )
+      # Parent issues that might not have the due_date set but do have
+      # child issues that do have due_date set should be included.
+      events.each do |issue|
+        if issue.leaf?
+          # Can't use the Issue#visible named_scope because it causes
+          # a SQL error with the awesome_nested_set
+          ancestors = issue.ancestors.all(:include => [:tracker, :assigned_to, :priority, :project],
+                                          :order => "start_date",
+                                          :conditions => 'start_date IS NOT NULL')
+          ancestors.map! {|i| i.visible? ? i : nil }.compact!
+
+          events += ancestors.flatten if ancestors.present?
+        end
+      end
+
       # Versions
       events += @query.versions(:conditions => ["effective_date BETWEEN ? AND ?", @gantt.date_from, @gantt.date_to])
-                                   
-      @gantt.events = events
+
+      @gantt.events = events.uniq
     end
     
     basename = (@project ? "#{@project.identifier}-" : '') + 'gantt'
@@ -459,13 +488,71 @@ class IssuesController < ApplicationController
     @text = params[:notes] || (params[:issue] ? params[:issue][:description] : nil)
     render :partial => 'common/preview'
   end
+
+  def auto_complete_for_issue_parent
+    @phrase = params[:issue_parent]
+    @candidates = []
+
+    # If cross project issue relations is allowed we should get
+    # candidates from every project
+    if Setting.cross_project_issue_relations?
+      projects_to_search = nil
+    else
+      projects_to_search = [ @project ] + @project.children
+    end
+
+    if @phrase.present?
+      # Try to find issue by id.
+      if @phrase.match(/^#?(\d+)$/)
+        if Setting.cross_project_issue_relations?
+          issue = Issue.visible.find_by_id( $1)
+        else
+          issue = Issue.visible.find_by_id_and_project_id( $1, projects_to_search.collect { |i| i.id})
+        end
+        @candidates << issue if issue
+      end
+
+      # Search by subject and description
+      # extract tokens from the question
+      # eg. hello "bye bye" => ["hello", "bye bye"]
+      tokens = @phrase.scan(%r{((\s|^)"[\s\w]+"(\s|$)|\S+)}).collect {|m| m.first.gsub(%r{(^\s*"\s*|\s*"\s*$)}, '')}
+      # tokens must be at least 3 character long
+      tokens = tokens.uniq.select {|w| w.length > 2 }
+      like_tokens = tokens.collect {|w| "%#{w.downcase}%"}
+
+      search_results, count = Issue.search( like_tokens, projects_to_search, :before => true, :limit => 10)
+      @candidates += search_results unless search_results.empty?
+    end
+
+    # Remove the current issue if it's a result
+    if params[:id].present?
+      @issue = Issue.visible.find_by_id(params[:id])
+      @candidates.delete(@issue)
+    end
+
+    render :inline => "<%= auto_complete_result_parent_issue( @candidates, @phrase) %>"
+  end
   
 private
   def find_issue
     @issue = Issue.find(params[:id], :include => [:project, :tracker, :status, :author, :priority, :category])
     @project = @issue.project
+    @parent_issue = @issue.parent if @issue
   rescue ActiveRecord::RecordNotFound
     render_404
+  end
+
+  def find_parent_issue
+    @parent_issue = Issue.find( params[:parent_issue_id])
+    render_404 unless @parent_issue.visible?(User.current)
+  rescue ActiveRecord::RecordNotFound
+    render_404
+  end
+
+  def find_optional_parent_issue
+    if params[:issue] && !params[:issue][:parent_id].blank?
+      @parent_issue = Issue.visible.find_by_id( params[:issue][:parent_id])
+    end
   end
   
   # Filter for bulk operations
@@ -523,13 +610,35 @@ private
         end
         @query.group_by = params[:group_by]
         @query.column_names = params[:query] && params[:query][:column_names]
-        session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :group_by => @query.group_by, :column_names => @query.column_names}
+        if params[:view_options] and params[:view_options].is_a? Hash
+          params[:view_options].each_pair do |name, value|
+            @query.set_view_option( name, value)
+          end
+        end
+
+        session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :group_by => @query.group_by, :column_names => @query.column_names, :view_options => @query.view_options}
       else
         @query = Query.find_by_id(session[:query][:id]) if session[:query][:id]
         @query ||= Query.new(:name => "_", :project => @project, :filters => session[:query][:filters], :group_by => session[:query][:group_by], :column_names => session[:query][:column_names])
+        if session[:query][:view_options]
+          session[:query][:view_options].each_pair do |name, value|
+            @query.set_view_option( name, value)
+          end
+        end
         @query.project = @project
       end
     end
+  end
+
+  # Retrive and build a query for the subissues
+  def retrieve_query_for_subissues
+    retrieve_query
+    @query.project = @project
+    @query.set_view_option('show_parents', ViewOption::SHOW_PARENTS[:organize_by])
+    @query.column_names = Setting.subissues_list_columns
+    sort_init( @query.sort_criteria.empty? ? [['id', 'desc']] : @query.sort_criteria)
+    sort_update({'id' => "#{Issue.table_name}.id"}.merge( @query.available_columns.inject({}) { |h, c| h[c.name.to_s] = c.sortable; h}))
+
   end
   
   # Rescues an invalid query statement. Just in case...

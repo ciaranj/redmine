@@ -165,6 +165,8 @@ en:
   error_issue_done_ratios_not_updated: "Issue done ratios not updated."
   error_workflow_copy_source: 'Please select a source tracker or role'
   error_workflow_copy_target: 'Please select target tracker(s) and role(s)'
+  error_issue_subtasks_cant_close_parent: "Can't close parent issue while one of the children is still open."
+  error_issue_subtasks_cant_select_lower_target_version: "Can't set target version of parent issue lower than any of the children."
   
   warning_attachments_not_saved: "{{count}} file(s) could not be saved."
   
@@ -264,6 +266,7 @@ en:
   field_assignable: Issues can be assigned to this role
   field_redirect_existing_links: Redirect existing links
   field_estimated_hours: Estimated time
+  field_original_estimated_hours: Original estimated time
   field_column_names: Columns
   field_time_zone: Time zone
   field_searchable: Searchable
@@ -276,6 +279,7 @@ en:
   field_content: Content
   field_group_by: Group results by
   field_sharing: Sharing
+  field_parent_issue: Child of
   
   setting_app_title: Application title
   setting_app_subtitle: Application subtitle
@@ -329,6 +333,9 @@ en:
   setting_issue_done_ratio_issue_status: Use the issue status
   setting_start_of_week: Start calendars on
   setting_rest_api_enabled: Enable REST web service
+  setting_subissues_list_columns: Columns for subissues list
+  setting_delete_children: Delete children when parent destroyed
+  setting_reopened_parent_issue_status: Status applied to parent when reopening
   
   permission_add_project: Create project
   permission_add_subprojects: Create subprojects
@@ -743,6 +750,11 @@ en:
   label_api_access_key: API access key
   label_missing_api_access_key: Missing an API access key
   label_api_access_key_created_on: "API access key created {{value}} ago"
+  label_view_option_parents_do_not_show: Never
+  label_view_option_parents_show_always: Always
+  label_view_option_parents_show_and_group: Organize by parent
+  label_issues_hierarchy: Issues hierarchy
+  label_view_option_show_parents: Show parents
   
   button_login: Login
   button_submit: Submit
@@ -787,6 +799,7 @@ en:
   button_quote: Quote
   button_duplicate: Duplicate
   button_show: Show
+  button_add_subissue: Add sub-issue
   
   status_active: active
   status_registered: registered
@@ -853,6 +866,7 @@ en:
   text_wiki_page_destroy_children: "Delete child pages and all their descendants"
   text_wiki_page_reassign_children: "Reassign child pages to this parent page"
   text_own_membership_delete_confirmation: "You are about to remove some or all of your permissions and may no longer be able to edit this project after that.\nAre you sure you want to continue?"
+  text_private: Private
   
   default_role_manager: Manager
   default_role_developper: Developer

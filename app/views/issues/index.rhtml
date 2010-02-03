@@ -29,6 +29,12 @@
 						<td><%= l(:field_group_by) %></td>
 						<td><%= select_tag('group_by', options_for_select([[]] + @query.groupable_columns.collect {|c| [c.caption, c.name.to_s]}, @query.group_by)) %></td>
 					</tr>
+                    <% @query.view_options.each_key do |voption| -%>
+                    <tr>
+                      <td><%= @query.caption_for_view_option(voption) %></td>
+                      <td><%= select_tag( "view_options[#{voption}]", options_for_select(@query.values_for_view_option(voption), @query.view_options[voption])) %></td>
+                    </tr>
+                    <% end %>
 				</table>
 			</div>
 		</fieldset>

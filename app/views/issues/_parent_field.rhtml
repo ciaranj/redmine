@@ -1,0 +1,19 @@
+<%= hidden_field_tag('issue[parent_id]', (@parent_issue ? @parent_issue.id : ""), :id => :issue_parent_id) %>
+<p><label><%= l(:field_parent_issue) %></label>
+<% if authorize_for( 'issues', 'auto_complete_for_issue_parent') %>
+  <% if @parent_issue && @parent_issue.visible? %>
+    <%= text_field_tag( 'parent_issue', '', :value => @parent_issue) %>
+  <% else %>
+    <%= text_field_tag( 'parent_issue', '', :value => @parent_issue ? l(:text_private) : '') %>
+  <% end %>
+  <%= link_to_function( "Remove", 'clearValues(["issue_parent_id", "parent_issue"])') %>
+
+  <div id="parent_issue_candidates" class="autocomplete"></div>
+  <%= javascript_tag "observeParentIssueField('#{url_for(:controller => :issues,
+                                                         :action => :auto_complete_for_issue_parent,
+                                                         :id => @issue.id,
+                                                         :project_id => @project.id) }')" %>
+<% else %>
+  <%= @parent_issue || "-" %>
+<% end %>
+</p>

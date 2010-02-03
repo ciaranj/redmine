@@ -78,6 +78,7 @@ class Query < ActiveRecord::Base
   serialize :filters
   serialize :column_names
   serialize :sort_criteria, Array
+  serialize :view_options
   
   attr_protected :project_id, :user_id
   
@@ -135,10 +136,23 @@ class Query < ActiveRecord::Base
     QueryColumn.new(:created_on, :sortable => "#{Issue.table_name}.created_on", :default_order => 'desc'),
   ]
   cattr_reader :available_columns
+
+  @@available_view_options =
+    [ ViewOption.new( 'show_parents',
+                      [ [ l(:label_view_option_parents_do_not_show),
+                          ViewOption::SHOW_PARENTS[:never] ],
+                        [ l(:label_view_option_parents_show_always),
+                          ViewOption::SHOW_PARENTS[:always] ],
+                        [ l(:label_view_option_parents_show_and_group),
+                          ViewOption::SHOW_PARENTS[:organize_by]]])
+    ]
+  cattr_reader :available_view_options
+
   
   def initialize(attributes = nil)
     super attributes
     self.filters ||= { 'status_id' => {:operator => "o", :values => [""]} }
+    self.view_options ||=  { 'show_parents' => 'do_not_show' }
   end
   
   def after_initialize
@@ -469,6 +483,22 @@ class Query < ActiveRecord::Base
                        :conditions => Query.merge_conditions(project_statement, options[:conditions])
   rescue ::ActiveRecord::StatementInvalid => e
     raise StatementInvalid.new(e.message)
+  end
+
+  def set_view_option( option, value)
+    self.view_options[option] = value
+    # Clear group_by if organize_by_parent is selected
+    if option == 'show_parents' && value == 'organize_by_parent'
+      self.group_by = nil
+    end
+  end
+
+  def values_for_view_option( option)
+    @@available_view_options.find { |vo| vo.name == option }.available_values
+  end
+
+  def caption_for_view_option( option)
+    @@available_view_options.find { |vo| vo.name == option }.caption
   end
   
   private
