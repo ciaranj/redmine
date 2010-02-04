@@ -15,9 +15,7 @@
        end
        issues.uniq! %>
     <fieldset class="related-issues"><legend><%= l(:label_related_issues) %></legend>
-    <ul>
     <%= render_list_of_related_issues( issues, version) %>
-    </ul>
     </fieldset>
     <% end %>
     <%= call_hook :view_projects_roadmap_version_bottom, :version => version %>
